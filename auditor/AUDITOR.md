@@ -1,0 +1,1 @@
+The AI auditor service will aim to audit smart contracts and return a security score based on how secure the contract is
