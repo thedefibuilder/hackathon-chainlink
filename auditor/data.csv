@@ -1,0 +1,1690 @@
+DAOInsufficient validation,20221021,OlympusDAO,https://web3sec.notion.site/Insufficient-validation-a593dd953d9f4bb692e1359acf052dc4?pvs=25,$292 K,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/README.md#20221021-bond-protocol---no-input-validation,,SolidityCopy/// @inheritdoc IBondFixedExpiryTeller
+function redeem(ERC20BondToken token_, uint256 amount_) external override nonReentrant {//vulnerable point, insufficient validation
+if (uint48(block.timestamp) < token_.expiry())
+revert Teller_TokenNotMatured(token_.expiry());
+        token_.burn(msg.sender, amount_);
+        token_.underlying().transfer(msg.sender, amount_); //vulnerable point, custom contract return OHM.
+}
+​,Root cause:  insufficient validation
+ERC20MiscalculationPricemanipulation,20221020,HEALTH,https://web3sec.notion.site/Incorrect-calculation-3628bf9f5a084c73bba1bb1ee4946c62?pvs=25,16 BNB,https://github.com/SunWeb3Sec/DeFiHackLabs#20221020-health---transfer-logic-flaw,,SolidityCopyfunction _transfer(address from, address to, uint256 value) private {
+require(value <= _balances[from]);
+require(to != address(0));
+uint256 contractTokenBalance = balanceOf(address(this));
+bool overMinTokenBalance = contractTokenBalance >= numTokensSellToAddToLiquidity;
+if (
+            overMinTokenBalance &&
+!inSwapAndLiquify &&
+            to == uniswapV2Pair &&
+            swapAndLiquifyEnabled
+        ) {
+            contractTokenBalance = numTokensSellToAddToLiquidity;
+//add liquidity
+swapAndLiquify(contractTokenBalance);
+}
+if (block.timestamp >= pairStartTime.add(jgTime) && pairStartTime != 0) {
+if (from != uniswapV2Pair) {
+uint256 burnValue = _balances[uniswapV2Pair].mul(burnFee).div(1000); //vulnerable point
+                _balances[uniswapV2Pair] = _balances[uniswapV2Pair].sub(burnValue); //vulnerable point
+                _balances[_burnAddress] = _balances[_burnAddress].add(burnValue); //vulnerable point
+if (block.timestamp >= pairStartTime.add(jgTime)) {
+                    pairStartTime += jgTime;
+}
+emit Transfer(uniswapV2Pair,_burnAddress, burnValue);
+IPancakePair(uniswapV2Pair).sync();
+}
+​,Root cause:  incorrect calculation.
+MetaverseInsufficient validation,20221020,BEGO,https://web3sec.notion.site/Insufficient-validation-04e0c2b7105c44e98dd2576e18f68835?pvs=25,12BNB,https://github.com/SunWeb3Sec/DeFiHackLabs#20221020-bego---incorrect-signature-verification,,SolidityCopymodifier isSigned(
+string memory _txHash,
+uint256 _amount,
+bytes32[] memory _r,
+bytes32[] memory _s,
+uint8[] memory _v
+    ) {
+require(checkSignParams(_r, _s, _v), "bad-sign-params");
+bytes32 _hash = keccak256(abi.encodePacked(bsc, msg.sender, _txHash, _amount));
+address[] memory _signers = new address[](_r.length); //vulnerable point
+for (uint8 i = 0; i < _r.length; i++) {
+            _signers[i] = ecrecover(_hash, _v[i], _r[i], _s[i]);
+}
+require(isSigners(_signers), "bad-signers");
+_;
+}
+function isSigners(address[] memory _signers) public view returns (bool){
+for (uint8 i = 0; i < _signers.length; i++) { //vulnerable point
+if (!_containsSigner(_signers[i])) {
+return false;
+}
+}
+return true; // null data will return true 
+}
+function mint(
+uint256 _amount,
+string memory _txHash,
+address _receiver,
+bytes32[] memory _r,
+bytes32[] memory _s,
+uint8[] memory _v
+    ) isSigned(_txHash, _amount, _r, _s, _v) external returns (bool){ //trace isSigned
+require(!txHashes[_txHash], "tx-hash-used");
+        txHashes[_txHash] = true;
+_mint(_receiver, _amount);
+return true;
+}
+​,Root cause:  Insufficient validation
+ERC20Access Control,20221018,HPAY,https://web3sec.notion.site/Incorrect-access-control-fb2894e0ae804b9fb9c35e76f55db4d0?pvs=25,115 BNB,https://github.com/SunWeb3Sec/DeFiHackLabs#20221018-hpay---access-control,fixed,SolidityCopyfunction setToken(address _addr) public { //vulnerable point
+        configuration.stakingToken = ERC20(_addr);
+        configuration.rewardsToken = ERC20(_addr);
+}
+​,Root cause:  Incorrect access control
+ERC20Access Control,20221017,Uerii,https://web3sec.notion.site/Incorrect-access-control-3b0318547ef74808b56c9f1ed435f55d?pvs=25,$2.4 K,https://github.com/SunWeb3Sec/DeFiHackLabs#20221017-uerii-token---access-control,,SolidityCopyfunction mint() public returns (bool) { //vulnerable point
+_mint( msg.sender, 100000000000000000 );
+return true;
+}
+​,Root cause:  Incorrect access control
+YieldFlashloansInsufficient validation,20221014,EFLeverVault,https://web3sec.notion.site/Insufficient-validation-6f07ce0ceae944f2baef2219b555b18b?pvs=25,750 ETH,https://github.com/SunWeb3Sec/DeFiHackLabs#20221014-eflevervault---verify-flashloan-callback,,SolidityCopyfunction receiveFlashLoan(
+        IERC20[] memory tokens,
+uint256[] memory amounts,
+uint256[] memory feeAmounts,
+bytes memory userData
+    ) public payable {
+require(msg.sender == balancer, "only flashloan vault");
+//insufficient validation
+uint256 loan_amount = amounts[0];
+uint256 fee_amount = feeAmounts[0];
+if (keccak256(userData) == keccak256("0x1")){
+_deposit(loan_amount, fee_amount);
+}
+if (keccak256(userData) == keccak256("0x2")){
+_withdraw(loan_amount, fee_amount);
+}
+}
+//1. rapay aave with flashloaned amount,    mx
+//2. withdraw steth with current ltv,  x
+//3. change all steths to eths,    x         
+//4. repay flashloan.   pay amx, left x-amx eth
+function _withdraw(uint256 amount, uint256 fee_amount) internal{
+uint256 steth_amount = amount.safeMul(IERC20(asteth).balanceOf(address(this))).safeDiv(getDebt());
+if (IERC20(weth).allowance(address(this), aave) != 0) {IERC20(weth).safeApprove(aave, 0);}
+IERC20(weth).safeApprove(aave, amount);
+IAAVE(aave).repay(weth, amount, 2, address(this));
+IAAVE(aave).withdraw(lido, steth_amount, address(this));
+if (IERC20(lido).allowance(address(this), curve_pool) != 0) {IERC20(lido).safeApprove(curve_pool, 0);}
+IERC20(lido).safeApprove(curve_pool, steth_amount);
+ICurve(curve_pool).exchange(1, 0, steth_amount, 0);
+(bool status, ) = weth.call.value(amount.safeAdd(fee_amount))("");
+require(status, "transfer eth failed");
+IERC20(weth).safeTransfer(balancer, amount.safeAdd(fee_amount));
+}
+...
+function withdraw(uint256 _amount) public nonReentrant{
+require(IERC20(ef_token).balanceOf(msg.sender) >= _amount, "not enough balance");
+if (is_paused){
+uint256 to_send = address(this).balance.safeMul(_amount).safeDiv(IERC20(ef_token).totalSupply());
+(bool status, ) = msg.sender.call.value(to_send)("");
+require(status, "transfer eth failed");
+TokenInterfaceERC20(ef_token).destroyTokens(msg.sender, _amount);
+return;
+}
+_earnReward();
+uint256 loan_amount = getDebt().safeMul(_amount).safeDiv(IERC20(ef_token).totalSupply());
+address[] memory tokens = new address[](1);
+uint256[] memory amounts = new uint256[](1);
+bytes memory userData = "0x2";
+    tokens[0] = weth;
+    amounts[0] = loan_amount;
+//uint256 user_eth_before = msg.sender.balance;
+IBalancer(balancer).flashLoan(address(this), tokens, amounts, userData);
+// call flashloan first to make vault retain enough ETH.
+uint256 to_send = address(this).balance; //vulnerable point
+(bool status, ) = msg.sender.call.value(to_send)(""); //vulnerable point
+require(status, "transfer eth failed");
+TokenInterfaceERC20(ef_token).destroyTokens(msg.sender, _amount);
+emit CFFWithdraw(msg.sender, to_send, _amount, getVirtualPrice());
+}
+​,Root cause: insufficient validation.
+MEVFlashloansInsufficient validation,20221014,MEVBOTa47b,https://web3sec.notion.site/Insufficient-validation-f1b3a9f5d3914151b928a53b36741488?pvs=25,$241 k,https://github.com/SunWeb3Sec/DeFiHackLabs#20221014-mevbota47b---mevbot-a47b,,No Code,Root cause: insufficient validation.
+ERC20Pricemanipulation,20221012,ATK,https://web3sec.notion.site/Incorrect-price-calculation-via-balanceOf-4dc3898d9dc549c79178174ba38a4bcf?pvs=25,$127 k,https://github.com/SunWeb3Sec/DeFiHackLabs#20221012-atk---flashloan-manipulate-price,,SolidityCopyfunction getPrice() public view returns(uint256){
+uint256 UDPrice;
+uint256 UDAmount  = balanceOf(_uniswapV2Pair); //vulnerable point
+uint256 USDTAmount = USDT.balanceOf(_uniswapV2Pair); //vulnerable point
+        UDPrice = UDAmount.mul(10**18).div(USDTAmount);
+return UDPrice;
+​,
+swapArbitrary call,20221011,Rabby wallet,https://web3sec.notion.site/Arbitrary-call-via-functionCallWithValue-5303e22cf8694040b90d5a3fab7cd0c2?pvs=25,$200,000,https://github.com/SunWeb3Sec/DeFiHackLabs#20221011-rabby-wallet-swaprouter---arbitrary-external-call-vulnerability,,No Code,Root cause: arbitrary external call vulnerability.
+YieldAccess Control,20221011,Templedao,https://web3sec.notion.site/Incorrect-access-control-3d5c3607c06a4727a44fe6b41b454f3f?pvs=25,$2.3 M,https://github.com/SunWeb3Sec/DeFiHackLabs#20221011-templedao---insufficient-access-control,,SolidityCopy/**
+      * @notice For migrations to a new staking contract:
+      *         1. User/DApp checks if the user has a balance in the `oldStakingContract`
+      *         2. If yes, user calls this function `newStakingContract.migrateStake(oldStakingContract, balance)`
+      *         3. Staking balances are migrated to the new contract, user will start to earn rewards in the new contract.
+      *         4. Any claimable rewards in the old contract are sent directly to the user's wallet.
+      * @param oldStaking The old staking contract funds are being migrated from.
+      * @param amount The amount to migrate - generally this would be the staker's balance
+      */
+function migrateStake(address oldStaking, uint256 amount) external {. //vulnerable point
+StaxLPStaking(oldStaking).migrateWithdraw(msg.sender, amount);
+_applyStake(msg.sender, amount);
+}
+​,
+Dex/AMMEconomic,20221011,Mango,https://web3sec.notion.site/Economic-issue-8f2f61948c344594b01cd9b6f893c15d?pvs=25,$47 M,,,No Code,Root cause: Economic issue 
+YieldArbitrary call,20221010,Carrot,https://web3sec.notion.site/Incorrect-access-control-eb09a10fb5be48edabd21daf3caee8e8?pvs=25,,https://github.com/SunWeb3Sec/DeFiHackLabs#20221010-carrot---public-functioncall,,SolidityCopyfunction transReward(bytes memory data) public { //data is controllable
+        pool.functionCall(data); //vulnerable point
+}
+​,Root cause: public function call, call transferowner 0xbf699b4b. All wallets granted approvals are impacted.
+GovernanceMaliciosProposal,20221009,Xave Finance,https://web3sec.notion.site/DaoModule-misconfiguration-68485c88e51f474d800137065ae9423c?pvs=25,,https://github.com/SunWeb3Sec/DeFiHackLabs#20221009-xave-finance---malicious-proposal-mint--transfer-ownership,,JavaScriptCopy​,Rroot cause: Gnosis Safe DAOModule compromised
+ERC20FlashloansPricemanipulation,20221006,RES token,https://web3sec.notion.site/Incorrect-reward-calculation-74a98b419d2c4b949cdd6b49c0306ead?pvs=25,$290K,https://github.com/SunWeb3Sec/DeFiHackLabs#20221006-RES-Token---pair-manipulate,,SolidityCopy​,Root cause: thisAToB(), burn RES token to increase exchange ratio.
+Dex/AMMInsufficient validation,20221002,Transit Swap,https://web3sec.notion.site/Incorrect-owner-address-validation-925ff7410bf74788960166798b41fecf?pvs=25,$21 M,https://github.com/SunWeb3Sec/DeFiHackLabs#20221002-transit-swap---incorrect-owner-address-validation,,No Code,Root cause: Incorrect owner address validation
+Dex/AMMInsufficient validation,20221001,BabySwap,https://web3sec.notion.site/Insufficient-validation-bcb846db6dd7474996c0ae6af98b125f?pvs=25,,https://github.com/SunWeb3Sec/DeFiHackLabs#20221001-babyswap---parameter-access-control,,SolidityCopyfunction swapExactTokensForTokens(
+uint amountIn,
+uint amountOutMin,
+address[] memory path,
+address[] memory factories,
+uint[] memory fees,
+address to,
+uint deadline
+    ) external virtual override ensure(deadline) returns (uint[] memory amounts) {
+        amounts = BabyLibrarySmartRouter.getAggregationAmountsOut(factories, fees, amountIn, path);
+require(amounts[amounts.length - 1] >= amountOutMin, 'BabyRouter: INSUFFICIENT_OUTPUT_AMOUNT');
+        amounts[0] = routerFee(factories[0], msg.sender, path[0], amounts[0]);
+        TransferHelper.safeTransferFrom(
+            path[0], msg.sender, BabyLibrarySmartRouter.pairFor(factories[0], path[0], path[1]), amounts[0]
+);
+_swap(amounts, path, factories, to); //vulnerable point - Insufficient validation
+}
+​,Root cause: Insufficient validation
+ERC20FlashloansPricemanipulation,20221001,RL Token,https://web3sec.notion.site/Incorrect-Reward-calculation-b0235d6bfc774a53a0129c8631abac33?pvs=25,,https://github.com/SunWeb3Sec/DeFiHackLabs#20221001-RL-Token---Incorrect-Reward-calculation,unfixed,SolidityCopyfunction transferFrom(
+address from,
+address to,
+uint256 amount
+    ) public virtual override returns (bool) {
+if (from != address(pancakeSwapV2Pair) && from != address(pancakeSwapV2Router)) {
+            incentive.distributeAirdrop(from);
+}
+if (to != address(pancakeSwapV2Pair) && to != address(pancakeSwapV2Router)) {
+            incentive.distributeAirdrop(to); //trace function
+}
+if (msg.sender != address(pancakeSwapV2Pair) && msg.sender != address(pancakeSwapV2Router)) {
+            incentive.distributeAirdrop(msg.sender); //trace function
+}
+require(allowance(from, msg.sender) >= amount, "insufficient allowance");
+if (govIDO != address(0)) {
+if (IKBKGovIDO(govIDO).isPriSaler(from)) {
+IKBKGovIDO(govIDO).releasePriSale(from);
+}
+if (IKBKGovIDO(govIDO).isPriSaler(to)) {
+IKBKGovIDO(govIDO).releasePriSale(to);
+}
+}
+//sell
+if (to == address(pancakeSwapV2Pair) && msg.sender == address(pancakeSwapV2Router)) {
+if (!isCommunityAddress[from]) {
+uint burnAmt = amount / 100;
+_burn(from, burnAmt);
+uint slideAmt = amount * 2 / 100;
+_transfer(from, slideReceiver, slideAmt);
+                amount -= (burnAmt + slideAmt);
+}
+} else {
+if (!isCommunityAddress[from] && !isCommunityAddress[to]) {
+uint burnAmt = amount / 100;
+                amount -= burnAmt;
+_burn(from, burnAmt);
+}
+}
+return super.transferFrom(from, to, amount);
+}
+​,Root cause: Incorrect Reward calculation
+ERC721reentrancy,20221001,Thunder Brawl,https://web3sec.notion.site/Reentrancy-in-claimReward-9d31f794db744f29997da3c0e2c6ee5d?pvs=25,,https://github.com/SunWeb3Sec/DeFiHackLabs#20221001-thunder-brawl---reentrancy,unfixed,SolidityCopyfunction claimReward(
+uint256 _ID,
+address payable _player,
+uint256 _amount,
+bool _rewardStatus,
+uint256 _x,
+string memory name,
+address _add
+    ) external {
+require(gameMode);
+bool checkValidity = guess(_x, name, _add);
+if (checkValidity == true) {
+if (winners[_ID][_player] == _amount) {
+                _player.transfer(_amount * 2);
+if (_rewardStatus == true) {
+sendReward(); //vulnerable point
+}
+delete winners[_ID][_player];
+} else {
+if (_rewardStatus == true) {
+sendRewardDys();
+}
+}
+            rewardStatus = false;
+}
+}
+function sendReward() public {
+        thunderbrawlRoulette.reward(msg.sender, 1);
+}
+​,Root cause: claimReward() - rewards are being drained due to a reentrancy bug.
+lendingDex/AMMFlashloansPricemanipulation,20220928,BXH,https://web3sec.notion.site/Incorrect-reward-calculation-ad19efe30a0c40cc8b74ac5a8d0b7853?pvs=25,$40,305,https://github.com/SunWeb3Sec/DeFiHackLabs#20220928-bxh---flashloan--price-oracle-manipulation,,SolidityCopyfunction getITokenBonusAmount( uint256 _pid, uint256 _amountInToken ) public view returns (uint256){
+        PoolInfo storage pool = poolInfo[_pid];
+(uint112 _reserve0, uint112 _reserve1, ) = IUniswapV2Pair(pool.swapPairAddress).getReserves(); //vulnerable point
+uint256 amountTokenOut = 0;
+uint256 _fee = 0;
+if(IUniswapV2Pair(pool.swapPairAddress).token0() == address(iToken)){
+            amountTokenOut = getAmountOut( _amountInToken , _reserve0, _reserve1, _fee); //vulnerable point
+} else {
+            amountTokenOut = getAmountOut( _amountInToken , _reserve1, _reserve0, _fee); //vulnerable point
+}
+return amountTokenOut;
+}
+function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, uint256 feeFactor) private pure returns (uint ) {
+require(amountIn > 0, 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
+require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
+uint256 feeBase = 10000;
+uint amountInWithFee = amountIn.mul(feeBase.sub(feeFactor));
+uint numerator = amountInWithFee.mul(reserveOut);
+uint denominator = reserveIn.mul(feeBase).add(amountInWithFee);
+uint amountOut = numerator / denominator;
+return amountOut;
+}
+​,Root cause: Incorrect Reward calculation
+ERC20Miscalculation,20220910,DPC,https://web3sec.notion.site/Incorrect-reward-calculation-a549ef3d16164ef5abe90c0b930fec63?pvs=25,$1.4 M,https://github.com/SunWeb3Sec/DeFiHackLabs#20220910-dpc---Incorrect-Reward-calculation,,SolidityCopyfunction claimStakeLp(address _from ,uint256 Amountwei) public {
+require(Amountwei > 0,"Quantity error");
+require(_from==msg.sender,"error");
+require(dpcLp[_from] >= Amountwei ,"Insufficient authorization limit");
+IERC20(LpContract).transfer(_from,Amountwei);
+
+                oldClaimQuota[_from] = oldClaimQuota[_from].add(getClaimQuota(_from)); //vulnerable point
+
+                dpcLp[_from] = dpcLp[_from].sub(Amountwei);
+
+                time=currTimeStamp();
+                dpcLpTime[_from] = time;
+
+                dpcLpTotal = dpcLpTotal.sub(Amountwei);
+}
+function getClaimQuota(address addr) public view returns (uint256) {
+uint256 ClaimQuota;
+if(dpcAirdrop[addr] > 0 && dpcLp[addr]>0){
+uint256 QuotastartTime;
+uint256 limit = 50 * 10**18;
+uint256 LpQuotaNum = dpcLp[addr].mul(getLpPrice()).mul(lpQuota).div(100);
+uint256 secondQuota;
+if(getDpcPrice()>0){
+                        secondQuota = LpQuotaNum.div(24*60*60).div(getDpcPrice());
+}
+uint256 limitSecondQuota = limit.div(24*60*60);
+if(secondQuota > limitSecondQuota){
+                        secondQuota = limitSecondQuota;
+}
+uint256 nowTime = currTimeStamp();
+if(dpcLpTime[addr]>ClaimQuotaTime[addr]){
+                        QuotastartTime = dpcLpTime[addr];
+}else{
+                        QuotastartTime = ClaimQuotaTime[addr];
+}
+                    ClaimQuota = (nowTime.sub(QuotastartTime)).mul(secondQuota);
+if(ClaimQuota > dpcAirdrop[addr]){
+                        ClaimQuota = dpcAirdrop[addr];
+}
+}else{
+                    ClaimQuota = 0;
+}
+               ClaimQuota = ClaimQuota.add(oldClaimQuota[addr]); //vulnerable point
+return ClaimQuota;
+}
+​,Root cause: Incorrect Reward calculation
+MEVArbitrary call,20220928,MEVBOT - Badc0de,https://web3sec.notion.site/Arbitrary-call-via-callFunction-d5772d187dfd4534b7b28bbb8c263839?pvs=25,$94,304,https://github.com/SunWeb3Sec/DeFiHackLabs#20220928-MEVBOT---Badc0de,,No Code,Root cause: Arbitrary call via callFunction.
+ERC20FlashloansPricemanipulation,20220923,RADT-DAO,https://web3sec.notion.site/Front-running-c6a831e7fb9b4792a58f1655d36f159d?pvs=25,$94,304,https://github.com/SunWeb3Sec/DeFiHackLabs#20220923-RADT-DAO---pair-manipulate,,No Code,Root cause: front running
+MEVAccess Control,20220913,MevBot private tx,https://web3sec.notion.site/Incorrect-access-control-62df718c5a0942baa0b6aa45080c8d90?pvs=25,$140 K,https://github.com/SunWeb3Sec/DeFiHackLabs#20220913-mevbot-private-tx,,JavaScriptCopyfunction 0x10a(uint256 varg0, uint256 varg1, uint256 varg2) private {
+require(varg0.data + varg0.length - varg0.data >= 96);
+require(MEM[varg0.data] == address(MEM[varg0.data]));
+    v0 = v1 = MEM[varg0.data + 64];
+if (0 == varg2) {
+        v2, v3 = msg.sender.token1().gas(msg.gas);
+require(v2); // checks call status, propagates error data on error
+require(MEM[64] + RETURNDATASIZE() - MEM[64] >= 32);
+require(v3 == address(v3));
+        goto 0x214;
+} else {
+        v4, v3 = msg.sender.token0().gas(msg.gas);
+require(v4); // checks call status, propagates error data on error
+require(MEM[64] + RETURNDATASIZE() - MEM[64] >= 32);
+require(v3 == address(v3));
+}
+if (varg2) {
+}
+    v5, v6 = address(v3).transfer(address(MEM[varg0.data]), varg1).gas(msg.gas); //vulnerable point
+}
+​,
+ERC20FlashloansPricemanipulationreward,20220909,YYDS,https://web3sec.notion.site/Incorrect-price-calculation-via-balanceOf-bb8dc28a6a174e50996bed7d7f851eeb?pvs=25,$742,286,https://github.com/SunWeb3Sec/DeFiHackLabs#20220909-YYDS---pair-manipulate,,No Code,
+Deflationary tokenFlashloansPricemanipulation,20220928,Ragnarok Online Invasion,https://web3sec.notion.site/Incorrect-access-control-d5e6d1a8b41e4a5d935dc0bf86e8375e?pvs=25,$44,000,https://github.com/SunWeb3Sec/DeFiHackLabs#20220908-ragnarok-online-invasion---broken-access-control,,SolidityCopyfunction transferOwnership(address newOwner) public virtual {
+require(newOwner != address(0), "Ownable: new owner is the zero address");
+emit OwnershipTransferred(_owner, newOwner);
+        _owner = newOwner;
+}
+​,Root cause: Incorrect access control
+ERC20FlashloansPricemanipulationreward,20220908,NewFreeDAO,https://web3sec.notion.site/Incorrect-reward-calculation-7f373b865943410ab75a405327461193?pvs=25,$125M,https://github.com/SunWeb3Sec/DeFiHackLabs#20220908-newfreedao---flashloans-attack,,SolidityCopyfunction 0x6811e3b9() public nonPayable {
+require(_isAirAddr.code.size);
+    v0, v1 = _isAirAddr.balanceOf(msg.sender).gas(msg.gas);
+require(v0); // checks call status, propagates error data on error
+require(RETURNDATASIZE() >= 32);
+require(v1 > 0, 'Amount can not be Zero');
+if (owner_d[msg.sender] <= 0) {
+        owner_d[msg.sender] = stor_6;
+}
+    v2 = _SafeDiv(stor_8, block.timestamp - owner_d[msg.sender]);
+require(v2 > 0, 'The collection time was not reached');
+    v3 = v4 = 0;
+if (block.timestamp > stor_7) { //vulnerable point
+if (v2 > 0) {
+            v5 = 0x3182(stor_b, v1);
+            v3 = v6 = _SafeDiv(0xf4240, v5);
+}
+} else if (v2 > 0) { //vulnerable point
+        v7 = 0x3182(stor_b, v1);
+        v8 = 0x3182(v2, v7);
+        v3 = v9 = _SafeDiv(0xf4240, v8);
+}
+require(_isAirAddr.code.size);
+    v10, v11 = _isAirAddr.transfer(msg.sender, v3).gas(msg.gas);
+require(v10); // checks call status, propagates error data on error
+require(RETURNDATASIZE() >= 32);
+    owner_d[msg.sender] = block.timestamp;
+}
+​,Root cause: Incorrect reward calculation
+ERC20FlashloansPricemanipulation,20220906,NXUSD,https://web3sec.notion.site/Incorrect-price-calculation-a4313a596d53407a80c25958fa3972fa?pvs=25,$50,000,https://github.com/SunWeb3Sec/DeFiHackLabs#20220906-NXUSD---flashloan-price-oracle-manipulation,fixed,SolidityCopy​,Root cause:  Incorrect price calculation 
+FlashloansPricemanipulationInsufficient validation,20220905,ZoomproFinance,https://web3sec.notion.site/No-verification-of-token-authenticity-82cb415802fe47659fa3af0766496341?pvs=25,$61,160 USDT,https://github.com/SunWeb3Sec/DeFiHackLabs#20220905-zoomprofinance---flashloans--price-manipulation,unfixed?,No Code,Root cause: Insufficient validation
+paymentAccess Control,20220902,ShadowFi,https://web3sec.notion.site/Incorrect-access-control-7244a94c84e440b5b2589328ef45901f?pvs=25,1,078 BNB,https://github.com/SunWeb3Sec/DeFiHackLabs#20220902-shadowfi---access-control,,SolidityCopyfunction burn(address account, uint256 _amount) public { //vulnerable point
+_transferFrom(account, DEAD, _amount);
+emit burnTokens(account, _amount);
+}
+​,Root cause: incorrect access control.
+NFTInsufficient validation,20220902,Bad Guys by RPF,https://web3sec.notion.site/Missing-check-for-chosenAmount-in-the-WhiteListMint-function-d76a780fa38b4a6cab5425cea9469359?pvs=25,400 NFTs,https://github.com/SunWeb3Sec/DeFiHackLabs#20220902-bad-guys-by-rpf---business-logic-flaw--missing-check-for-number-of-nft-to-mint,,SolidityCopyfunction WhiteListMint(bytes32[] calldata _merkleProof, uint256 chosenAmount)
+public
+{
+require(_numberMinted(msg.sender)<1, "Already Claimed");
+require(isPaused == false, "turn on minting");
+require(
+            chosenAmount > 0,
+"Number Of Tokens Can Not Be Less Than Or Equal To 0"
+);
+require(
+totalSupply() + chosenAmount <= maxsupply - reserve,
+"all tokens have been minted"
+);
+bytes32 leaf = keccak256(abi.encodePacked(msg.sender));
+require(
+            MerkleProof.verify(_merkleProof, rootHash, leaf),
+"Invalid Proof"
+);
+_safeMint(msg.sender, chosenAmount); //vulnerable point
+}
+​,Root cause: Insufficient validation
+NFTBad randomness,20220824,LuckeyTiger ,https://web3sec.notion.site/Bad-randomness-b3416b46eedd43389d30ec8071e147b2?pvs=25,,https://github.com/SunWeb3Sec/DeFiHackLabs#20220824-luckeytiger-nft---predicting-random-numbers,,SolidityCopy​,Root cause: bad randomness.
+StablecoinFlashloansPricemanipulationreward,20220810,XSTABLE Protocol,https://web3sec.notion.site/Incorrect-Logic-Check-get-rewards-over-skim-9b0f00c5bce6438882813e65a455dd58?pvs=25,,https://github.com/SunWeb3Sec/DeFiHackLabs#20220810-xstable-protocol---incorrect-logic-check,,JavaScriptCopy​,Root cause: Incorrect Logic Check, get rewards over skim()
+ERC20FlashloansrewardInsufficient validation,20220809,ANCH,https://web3sec.notion.site/Insufficient-validation-get-rewards-over-skim-f8b2f75dc14e4268b9252b48ae1a7473?pvs=25,,https://github.com/SunWeb3Sec/DeFiHackLabs#20220809-anch---skim-token-balance,,JavaScriptCopy//this method is responsible for taking all fee, if takeFee is true
+function _transfer( //vulnerable point - recipient and sender can the same
+        address sender,
+        address recipient,
+        uint256 tAmount
+    ) private {
+require(sender != address(0), "ERC20: transfer from the zero address");
+require(recipient != address(0), "ERC20: transfer to the zero address");
+require(tAmount > 0, "Transfer amount must be greater than zero");
+// Insufficient validation. sender and recipient can be same.
+if(sender == uniswapV2Pair) {
+_tokenBuyTransferReward(sender, recipient, tAmount);
+} else if(recipient == uniswapV2Pair) {
+_tokenSellTransferReward(sender, recipient, tAmount);
+} else{
+
+            uint256 currentRate = _getRate();
+            uint256 rAmount = tAmount.mul(currentRate);
+            _rOwned[sender] = _rOwned[sender].sub(rAmount);
+            _rOwned[recipient] = _rOwned[recipient].add(rAmount);
+            
+            emit Transfer(sender, recipient, tAmount);
+}
+​,Root cause: insufficient validation , get rewards over skim()
+Dex/AMMFlashloansPricemanipulation,20220807,EGD Finance,https://web3sec.notion.site/Incorrect-price-calculation-via-balanceOf-a07d59bcb25b48b58e306f7bf9e353f1?pvs=25,$36,044,https://github.com/SunWeb3Sec/DeFiHackLabs#20220807-egd-finance---flashloans--price-manipulation,,JavaScriptCopyfunction claimAllReward() external {
+require(userInfo[msg.sender].userStakeList.length > 0, 'no stake');
+require(!black[msg.sender],'black');
+        uint[] storage list = userInfo[msg.sender].userStakeList;
+        uint rew;
+        uint outAmount;
+        uint range = list.length;
+for (uint i = 0; i < range; i++) {
+            UserSlot storage info = userSlot[msg.sender][list[i - outAmount]];
+require(info.totalQuota != 0, 'wrong index');
+            uint quota = (block.timestamp - info.claimTime) * info.rates;
+if (quota >= info.leftQuota) {
+                quota = info.leftQuota;
+}
+            rew += quota * 1e18 / getEGDPrice(); // check getEGDPrice()
+            info.claimTime = block.timestamp;
+            info.leftQuota -= quota;
+            info.claimedQuota += quota;
+if (info.leftQuota == 0) {
+                userInfo[msg.sender].totalAmount -= info.totalQuota;
+delete userSlot[msg.sender][list[i - outAmount]];
+                list[i - outAmount] = list[list.length - 1];
+                list.pop();
+                outAmount ++;
+}
+}
+function getEGDPrice() public view returns (uint){
+        uint balance1 = EGD.balanceOf(pair); //vulnerable point
+        uint balance2 = U.balanceOf(pair); //vulnerable point
+return (balance2 * 1e18 / balance1);
+}
+​,Root cause: Incorrect price calculation by balanceOf
+BridgeInsufficient validationuninitialized,20220802,Nomad Bridge,https://web3sec.notion.site/Incorrect-acceptable-merkle-root-checks-810dcc984f724255b8991ea797eb66b7?pvs=25,$152M,https://github.com/SunWeb3Sec/DeFiHackLabs#20220802-nomad-bridge---business-logic-flaw--incorrect-acceptable-merkle-root-checks,fixed,JavaScriptCopy
+function initialize(
+uint32 _remoteDomain,
+        address _updater,
+        bytes32 _committedRoot,
+        uint256 _optimisticSeconds
+) public initializer {
+__NomadBase_initialize(_updater);
+// set storage variables
+        entered = 1;
+        remoteDomain = _remoteDomain;
+        committedRoot = _committedRoot;
+// pre-approve the committed root.
+confirmAt[_committedRoot] = 1; 
+_setOptimisticTimeout(_optimisticSeconds);
+}
+function process(bytes memory _message) public returns (bool _success) {
+// ensure message was meant for this domain
+        bytes29 _m = _message.ref(0);
+require(_m.destination() == localDomain, "!destination");
+// ensure message has been proven
+        bytes32 _messageHash = _m.keccak();
+// messages[_messageHash] 0x00 by default //vulnerable point
+ require(acceptableRoot(messages[_messageHash]), "!proven");
+
+​,
+ERC4626Access Control,20220801,Reaper Farm,https://web3sec.notion.site/Incorrect-access-control-2fc3ef0f4fce4a2596bb3c9a8ca1c69e?pvs=25,$1.7M,https://github.com/SunWeb3Sec/DeFiHackLabs#20220801-reaper-farm---business-logic-flaw--lack-of-access-control-mechanism,fixed,JavaScriptCopyfunction _withdraw(uint256 assets, uint256 shares, address receiver, address owner) internal returns (uint256) { //vulnerable point
+_burn(owner, shares);
+​,Root cause: without proper access control, allowing anyone to withdraw anyone else’s funds.
+ERC20FlashloansInsufficient validation,20220725,LPC,https://web3sec.notion.site/Incorrect-recipient-balance-check-341979a8a0cd4f1aa8c8421a9eae618b?pvs=25,$45K,https://github.com/SunWeb3Sec/DeFiHackLabs#20220725-lpc---business-logic-flaw--incorrect-recipient-balance-check-did-not-check-senderrecipient-in-transfer,unfixed,JavaScriptCopyfunction _transfer(
+...
+totalHolders = totalHolders_;
+
+        _balances[sender] = senderBalance.sub(amount);
+        _balances[recipient] = recipientBalance.add(recipientAmount);
+        emit Transfer(sender, recipient, recipientAmount);
+_afterTokenTransfer(sender, recipient, amount);
+}
+​,Root cause: Incorrect recipient balance check, did not check sender!=recipient in transfer.
+ERC20uninitializedGovernanceＳtorage collision,20220723,Audius,https://web3sec.notion.site/Storage-Collision-Malicious-Proposal-630c7104e4554aef966c5186d1336e29?pvs=25,$6M,https://github.com/SunWeb3Sec/DeFiHackLabs#20220723-audius---storage-collision--malicious-proposal,fixed,SolidityCopy/**
+   * @dev Modifier to use in the initializer function of a contract.
+   */
+modifier initializer() {
+require(msg.sender == proxyAdmin, "Only proxy admin can initialize");
+require(initializing || isConstructor() || !initialized, "Contract instance has already been initialized");
+bool isTopLevelCall = !initializing;
+if (isTopLevelCall) {
+      initializing = true;
+      initialized = true;
+}
+_;
+if (isTopLevelCall) {
+      initializing = false;
+}
+}
+​,Root cause: Storage Collision & Malicious Proposal
+ERC20FlashloansPricemanipulationAccess Control,20220713,SpaceGodzilla,https://web3sec.notion.site/Incorrect-access-control-d74bce69e67f4cb3bc49d38d76bc68b6?pvs=25,$26,000,https://github.com/SunWeb3Sec/DeFiHackLabs#20220713-spacegodzilla---flashloans--price-manipulation,,SolidityCopyfunction swapAndLiquifyStepv1() public { //vulnerable point
+uint256 ethBalance = ETH.balanceOf(address(this));
+uint256 tokenBalance = balanceOf(address(this));
+addLiquidityUsdt(tokenBalance, ethBalance);
+}
+​,Root cause: incorrect access control.
+ERC721Flashloansreentrancy,20220710,Omni NFT,https://web3sec.notion.site/Reentrancy-safeTransferFrom-in-burn-function-7dcaf8a7c9c34cf9b6b25d8a6f82fb55?pvs=25,$1.4M,https://github.com/SunWeb3Sec/DeFiHackLabs#20220710-omni-nft---reentrancy,,SolidityCopyfunction executeWithdrawERC721(
+mapping(address => DataTypes.ReserveData) storage reservesData,
+mapping(uint256 => address) storage reservesList,
+        DataTypes.UserConfigurationMap storage userConfig,
+        DataTypes.ExecuteWithdrawERC721Params memory params
+    ) external returns (uint256) {
+        DataTypes.ReserveData storage reserve = reservesData[params.asset];
+        DataTypes.ReserveCache memory reserveCache = reserve.cache();
+
+        reserve.updateState(reserveCache);
+uint256 amountToWithdraw = params.tokenIds.length;
+bool withdrwingAllCollateral = INToken(reserveCache.xTokenAddress).burn(
+            msg.sender,
+            params.to,
+            params.tokenIds,
+            reserveCache.nextLiquidityIndex
+        );
+​,Root cause: safeTransferFrom in burn function. project without nonReentrant protection.
+NFTMarketplaceInsufficient validationSignature,20220701,Quixotic,https://web3sec.notion.site/fillSellOrder-function-only-check-seller-signature-a82bc25031394e9c99fc3babcd6be026?pvs=25,$100K,https://github.com/SunWeb3Sec/DeFiHackLabs#20220701-quixotic---optimism-nft-marketplace,,SolidityCopy/*
+    * @dev External trade function. This accepts the details of the sell order and signed sell
+    * order (the signature) as a meta-transaction.
+    *
+    * Emits a {SellOrderFilled} event via `_fillSellOrder`.
+    */
+function fillSellOrder(
+address payable seller,
+address contractAddress,
+uint256 tokenId,
+uint256 startTime,
+uint256 expiration,
+uint256 price,
+uint256 quantity,
+uint256 createdAtBlockNumber,
+address paymentERC20,
+bytes memory signature,
+address payable buyer
+    ) external payable whenNotPaused nonReentrant {
+// If the payment ERC20 is the zero address, we check that enough native ETH has been sent
+// with the transaction. Otherwise, we use the supplied ERC20 payment token.
+if (paymentERC20 == address(0)) {
+require(msg.value >= price, "Transaction doesn't have the required ETH amount.");
+} else {
+_checkValidERC20Payment(buyer, price, paymentERC20);
+}
+
+        SellOrder memory sellOrder = SellOrder(
+            seller,
+            contractAddress,
+            tokenId,
+            startTime,
+            expiration,
+            price,
+            quantity,
+            createdAtBlockNumber,
+            paymentERC20
+        );
+/* Make sure the order is not cancelled */
+require(
+            cancellationRegistry.getSellOrderCancellationBlockNumber(seller, contractAddress, tokenId) < createdAtBlockNumber,
+"This order has been cancelled."
+);
+/* Check signature */
+require(_validateSellerSignature(sellOrder, signature), "Signature is not valid for SellOrder."); //vulnerable point
+// Check has started
+require((block.timestamp > startTime), "SellOrder start time is in the future.");
+// Check not expired
+require((block.timestamp < expiration), "This sell order has expired.");
+_fillSellOrder(sellOrder, buyer);
+}
+​,Root cause: fillSellOrder function only check seller signature.
+ERC721Insufficient validation,20220626,XCarnival,https://web3sec.notion.site/Insufficient-validation-c4b453b1122e45118f542a95511a6f0b?pvs=25,$3.87M,https://github.com/SunWeb3Sec/DeFiHackLabs#20220626-xcarnival---infinite-number-of-loans,,SolidityCopyfunction pledgeAndBorrow(address _collection, uint256 _tokenId, uint256 _nftType, address xToken, uint256 borrowAmount) external nonReentrant {
+uint256 orderId = pledgeInternal(_collection, _tokenId, _nftType);
+IXToken(xToken).borrow(orderId, payable(msg.sender), borrowAmount); //vulnerable point
+}
+​,Root cause:  call XToken contract's borrow(), there is no judgment that the NFT has been withdrawn.
+BridgeKeyCompromised,20220627,Harmony's Horizon,https://web3sec.notion.site/Private-key-compromised-12b9206fb3d84b1e9d6723c4a7fab100?pvs=25,$100M,https://github.com/SunWeb3Sec/DeFiHackLabs#20220624-harmonys-horizon-bridge---private-key-compromised,,No Code,Root cause: private key compromised
+ERC777Insufficient validation,20220618,SNOOD,https://web3sec.notion.site/Miscalculation-on-_spendAllowance-38caa4b040664580bb2536db5ad848a8?pvs=25,104 ETH,https://github.com/SunWeb3Sec/DeFiHackLabs#20220618-snood---miscalculation-on-_spendallowance,,SolidityCopyfunction _spendAllowance(address owner, address spender, uint256 amount) internal override {
+        super._spendAllowance(owner, spender, _getStandardAmount(amount)); //vulnerable point
+}
+​,Root cause: miscalculation on _spendAllowance
+lendingFlashloansPricemanipulation,20220616,InverseFinance,https://web3sec.notion.site/Incorrect-price-calculation-via-balanceOf-dfa8e72225504461b10825fab7bffc1f?pvs=25,$1.26M,https://github.com/SunWeb3Sec/DeFiHackLabs#20220616-inversefinance---flashloan--price-oracle-manipulation,,SolidityCopyfunction latestAnswer() public view returns (uint256) {
+uint256 crvPoolBtcVal = WBTC.balanceOf(address(CRV3CRYPTO)) * uint256(BTCFeed.latestAnswer()) * 1e2; //vulnerable point
+uint256 crvPoolWethVal = WETH.balanceOf(address(CRV3CRYPTO)) * uint256(ETHFeed.latestAnswer()) / 1e8; //vulnerable point
+uint256 crvPoolUsdtVal = USDT.balanceOf(address(CRV3CRYPTO)) * uint256(USDTFeed.latestAnswer()) * 1e4; //vulnerable point
+uint256 crvLPTokenPrice = (crvPoolBtcVal + crvPoolWethVal + crvPoolUsdtVal) * 1e18 / crv3CryptoLPToken.totalSupply();
+return (crvLPTokenPrice * vault.pricePerShare()) / 1e18;
+}
+​,Root cause: Incorrect LP price calculation via balanceOf.
+ERC20Access Control,20220608,GYMNetwork,https://web3sec.notion.site/Incorrect-access-control-de8519db95d94b0eadc1f4b23c87ae54?pvs=25,$2M,https://github.com/SunWeb3Sec/DeFiHackLabs#20220608-gymnetwork---access-control,fixed,SolidityCopy/**
+     * @notice Deposit in given pool
+     * @param _depositAmount: Amount of want token that user wants to deposit
+     */
+function depositFromOtherContract(
+uint256 _depositAmount,
+uint8 _periodId,
+bool isUnlocked,
+address _from
+    ) external external { //vulnerable point
+require(isPoolActive,'Contract is not running yet');
+_autoDeposit(_depositAmount,_periodId,isUnlocked,_from);
+​,Root cause: Incorrect access control.
+BridgeSignature,20220608,Wintermute,https://web3sec.notion.site/Signature-replay-68fc27bc497e4c508839d93646eeabf1?pvs=25,$3M OP,https://github.com/SunWeb3Sec/DeFiHackLabs#20220608-optimism---wintermute---signature-replay,fixed,SolidityCopy/// @dev Allows to create new proxy contact and execute a message call to the new proxy within one transaction.
+/// @param masterCopy Address of master copy.
+/// @param data Payload for message call sent to new proxy contract.
+function createProxy(address masterCopy, bytes memory data)
+public
+returns (Proxy proxy)
+{
+        proxy = new Proxy(masterCopy);
+if (data.length > 0)
+// solium-disable-next-line security/no-inline-assembly
+assembly {
+if eq(call(gas, proxy, 0, add(data, 0x20), mload(data), 0, 0), 0) { revert(0, 0) }
+}
+emit ProxyCreation(proxy);
+}
+​,Root cause: contract does not use eip155 to prevent replay attacks
+ERC20FlashloansPricemanipulation,20220606,Discover,https://web3sec.notion.site/Incorrect-price-calculation-via-balanceOf-a5476f8e675d488480c5156a37332e80?pvs=25,$49 BNB,https://github.com/SunWeb3Sec/DeFiHackLabs#20220606-discover---flashloan--price-oracle-manipulation,,SolidityCopyfunction getprice() public view returns (uint256 _price) {
+uint256 lpusdtamount=usdt.balanceOf(_lpaddr); //vulnerable point 
+uint256 lpotheramount=other.balanceOf(_lpaddr); //vulnerable point
+       
+        _price=lpusdtamount*10**18/lpotheramount;
+}
+​,Root cause: Incorrect price calculation via balanceOf.
+Deflationary tokenFlashloansPricemanipulation,20220529,NOVO Protocol,https://web3sec.notion.site/No-sender-address-validation-1aedb1fa88da4a9e8dfe11128bbf653d?pvs=25,279 BNB,https://github.com/SunWeb3Sec/DeFiHackLabs#20220529-novo-protocol---flashloan--price-oracle-manipulation,,SolidityCopyfunction transferFrom(
+address sender,
+address recipient,
+uint256 amount
+    ) public override returns (bool) {
+// locked the NOVO of staking holders
+uint256 lockedAmount = getLockedAmount(sender);
+if (lockedAmount > 0) {
+require(
+(balanceOf(sender) - amount) >= lockedAmount,
+"Your balance was locked"
+);
+}
+// _approve(  //vulnerable point - commented out
+//     sender,
+//     _msgSender(),
+//     _allowances[sender][_msgSender()].sub(
+//         amount,
+//         "BEP20: transfer amount exceeds allowance"
+//     )
+// );
+​,Root cause:  No sender address validation.
+DAOFlashloansPricemanipulationskim,20220524,HackDao,https://web3sec.notion.site/Incorrect-logic-in-_transfer-function-of-token-contract-74f17f2adf084fd5a493e03aadd761ac?pvs=25,,https://github.com/SunWeb3Sec/DeFiHackLabs#20220524-hackdao---skim-token-balance,,SolidityCopyfunction _transfer(
+address sender,
+address recipient,
+uint256 amount
+    ) internal override virtual {
+require(sender != address(0), "ERC20: transfer from the zero address");
+require(recipient != address(0), "ERC20: transfer to the zero address");
+_beforeTokenTransfer(sender, recipient, amount);
+uint256 senderBalance = _balances[sender];
+require(senderBalance >= amount, "ERC20: transfer amount exceeds balance");
+        unchecked {
+            _balances[sender] = senderBalance - amount;
+}
+uint256 actualAmount = amount;
+if(parentAddress[recipient] == address(0) && recipient != uniswapV2Pair){
+if(sender == uniswapV2Pair){
+                parentAddress[recipient] = _defaultAddress;
+}else{
+                parentAddress[recipient] = sender;
+}
+}
+if(!isWhiteListed(sender) && !isWhiteListed(recipient)){
+uint256 fee = calculationFeeNum(amount,_feeRatio);
+//sell
+if(recipient == uniswapV2Pair){
+require(senderBalance >= amount.add(fee), "ERC20: There are not enough charges for the account balance");
+                unchecked {
+                    _balances[sender] -= fee;
+}
+}else{
+                actualAmount = amount - fee;
+}
+​,Root cause: Incorrect logic in _transfer  function of token contract.
+Miscalculation,20230601,Cellframenet,https://web3sec.notion.site/Miscalculation-during-liquidity-migration-d4be7cafe1e541a1985cbcce5c0f13fb?pvs=25,$76k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Cellframe_exp.sol,JavaScriptCopyfunction migrate(uint amountLP) external  {
+(uint token0,uint token1) = migrateLP(amountLP);
+(uint eth,uint cell, ) = IUniswapV2Router01(LP_NEW).getReserves();     
+
+        uint resoult = cell/eth;              
+        token1 = resoult * token0;
+IERC20(CELL).approve(ROUTER_V2,token1);
+IERC20(WETH).approve(ROUTER_V2,token0);
+(uint tokenA, , ) = IUniswapV2Router01(ROUTER_V2).addLiquidity(
+WETH,
+CELL,
+            token0,
+            token1,
+0,
+0,
+            msg.sender,
+            block.timestamp + 5000
+);
+
+        uint balanceOldToken = IERC20(OLD_CELL).balanceOf(address(this));
+IERC20(OLD_CELL).transfer(marketingAddress,balanceOldToken);
+if (tokenA < token0) {
+            uint256 refund0 = token0 - tokenA;
+IERC20(WETH).transfer(msg.sender,refund0);
+}
+}
+function migrateLP(uint amountLP) internal returns(uint256 token0,uint256 token1) {
+IERC20(LP_OLD).transferFrom(msg.sender,address(this),amountLP);
+IERC20(LP_OLD).approve(ROUTER_V2,amountLP);
+return IUniswapV2Router01(ROUTER_V2).removeLiquidity(
+WETH,
+OLD_CELL,
+            amountLP,
+0,
+0,
+address(this),
+            block.timestamp + 5000
+);
+}
+​,Root cause:
+Price Manipulation,20230531,ERC20TokenBank,https://web3sec.notion.site/Price-manipulation-3f5479aa208e4cfd9ecdc6f7c20c217e?pvs=25,$111k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/ERC20TokenBank_exp.sol,JavaScriptCopyfunction doExchange(uint256 amount) public returns(bool){
+require(amount >= minimum_amount, "invalid amount");
+require(amount <= ERC20TokenBankInterface(from_bank).balance(), "too much amount");
+ERC20TokenBankInterface(from_bank).issue(address(this), amount); //vulnerable point
+
+    uint256 camount = usdc.balanceOf(address(this));
+    usdc.safeApprove(address(curve), camount);
+    curve.exchange_underlying(1, 2, camount, 0);
+
+    uint256 namount = usdt.balanceOf(address(this));
+    usdt.safeTransfer(to_bank, namount);
+return true;
+}
+}
+​,Root cause:
+Price Manipulation,20230529,Jimbo,https://web3sec.notion.site/Protocol-Specific-Price-Manipulation-4e3c752119df448791a656ebf445789e?pvs=25,$8M,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Jimbo_exp.sol,JavaScriptCopyfunction shift() public returns (bool) { //vulnerable point
+if (canShift()) {
+// Let the token know the protocol is rebalancing
+            jimbo.setIsRebalancing(true);
+// Get the active bin
+            uint24 activeBin = pair.getActiveId();
+// Remove all non-floor bin liquidity (max bin -> anchor bin)
+_removeNonFloorLiquidity();
+// Remove all floor bin liquidity
+_removeFloorLiquidity();
+// Count the total JIMBO and ETH in the contract after liquidity removal
+            uint256 totalJimboInPool = jimbo.balanceOf(address(this));
+            uint256 totalEthInContract = weth.balanceOf(address(this));
+// Floor is based on total eth / circulating supply
+            uint256 totalCirculatingJimbo = jimbo.totalSupply() -
+                jimbo.balanceOf(address(0)) -
+                totalJimboInPool;
+// Calculate the new target floor bin
+            uint24 newFloorBin = _calculateNewFloorBin(
+                totalEthInContract,
+                totalCirculatingJimbo
+            );
+// Calculate new anchor bin id
+// Make sure you use the new floor bin and not the stale one
+            uint24 newAnchorBin = activeBin - newFloorBin > NUM_ANCHOR_BINS
+? activeBin - NUM_ANCHOR_BINS
+: activeBin - 1;
+// Set internal bin state
+_setBinState({
+floorBin_: newFloorBin,
+anchorBin_: newAnchorBin, // this is not always true
+triggerBin_: activeBin + NUM_ANCHOR_BINS,
+maxBin_: activeBin + NUM_LIQ_BINS - 1 // decrement because we are adding inclusive of active bin
+});
+// Deploy all the JIMBO liquidity first
+_deployJimboLiquidity(); //vulnerable point
+// Deploy floor bin liquidity with 90% of all ETH in the contract
+_deployFloorLiquidity((weth.balanceOf(address(this)) * 90) / 100); //vulnerable point
+// Use entire remaining weth balance in the contract to deploy anchors
+_deployAnchorLiquidity(weth.balanceOf(address(this))); //vulnerable point
+// Let the token know we are done rebalancing to apply taxes
+            jimbo.setIsRebalancing(false);
+return true;
+} else return false;
+}
+​,Root cause:
+Slippage,20230529,BabyDogeCoin,https://web3sec.notion.site/Lack-Slippage-Protection-1828cba4d0cb43dda50b6c1e7f14ea57?pvs=25,$135k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/BabyDogeCoin_exp.sol,JavaScriptCopy/*
+     * @notice Swaps input token to ERC20 token and deposits on behalf of msg.sender to specified farm
+     * @param farm Farm address, where tokens should be deposited
+     * @param amountIn Amount of input tokens
+     * @param amountOutMin Minimum amount of tokens to receive
+     * @param path Address path to swap input token
+     * @return Received token amount
+     * @dev Last element of path must be stake token
+     * @dev First element of path must be input token
+     */
+function buyTokensAndDepositOnBehalf(
+IFarm farm,
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path
+) external payable returns(uint256) {
+if (msg.value > 0) {
+require(address(WBNB) == path[0], "Input token != WBNB");
+require(amountIn == msg.value, "Invalid msg.value");
+WBNB.deposit{value: amountIn}();
+} else {
+IERC20(path[0]).transferFrom(msg.sender, address(this), amountIn);
+}
+        address tokenOut = path[path.length - 1];
+require(tokenOut == farm.stakeToken(), "Not a stake token");
+_approveIfRequired(path[0], address(router), amountIn);
+        router.swapExactTokensForTokensSupportingFeeOnTransferTokens(
+            amountIn,
+            amountOutMin,
+            path,
+address(this),
+            block.timestamp + 1200
+);
+        uint256 received = IERC20(tokenOut).balanceOf(address(this));
+_approveIfRequired(tokenOut, address(farm), received);
+        farm.depositOnBehalf(received, msg.sender);
+
+        emit TokensBoughtAndDeposited (
+address(farm),
+            msg.sender,
+            path[0],
+            tokenOut,
+            amountIn,
+            received
+        );
+return received;
+}
+​,Root cause:
+Business Logic Flaw,20230529,FAPEN,https://web3sec.notion.site/Function-abused-to-get-rewards-7629f02b87bd465b9d612b204460b83c?pvs=25,$600,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/FAPEN_exp.sol,SolidityCopyfunction register(address neighbor) external initialized {
+address user = msg.sender;
+require(villages[user].timestamp == 0, "just new users"); //vulnerable points
+uint256 gems;
+    totalVillages++;
+if (villages[neighbor].sheeps[0] > 0 && neighbor != manager) {
+        gems += GEM_BONUS * 2;
+} else{
+        neighbor = manager;
+        gems += GEM_BONUS;
+}
+    villages[neighbor].neighbors++;
+    villages[user].neighbor = neighbor;
+    villages[user].gems += gems;
+emit Newbie(msg.sender, gems);
+}
+​,It does not update the timestamp after the registration. In this case, the attacker can invoke the function register for multiple times.
+Access Control,20230529,NOON (NO),https://web3sec.notion.site/Public-_transfer-0dfa1c852f6a424c8b4a4baf8ba92d75?pvs=25,$2K,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/NOON_exp.sol,JavaScriptCopy​,Incorrect function visibility
+skimIncorrect logic,20230525,GPT Token,https://web3sec.notion.site/Fee-Mechanism-Exploitation-7cb328590042406faff8098d1dfa9c09?pvs=25,$42k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/GPT_exp.sol,No Code,Root cause: 
+Access Control,20230524,Local Trade LCT,https://web3sec.notion.site/Improper-Access-Control-of-Close-source-contract-47145d8753ed45e4bd83a7ff8ab21840?pvs=25,384 BNB,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/LocalTrader2_exp.sol,No Code,Root cause: 
+Miscalculation,20230524,CS Token,https://web3sec.notion.site/Outdated-global-variable-sellAmount-for-calculating-burnAmount-367e398d4fb144fb9c89228216eb3176?pvs=25,714K USD,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/CS_exp.sol,JavaScriptCopyfunction _transfer(
+address from,
+        address to,
+        uint256 amount
+) private {
+require(from != address(0), "ERC20: transfer from the zero address");
+require(to != address(0), "ERC20: transfer to the zero address");
+require(amount > 0, "Transfer amount must be greater than zero");
+require(!blackList[from], "black account");
+require(!blackList[to], "black account");
+if (!canContract && _isContract(msg.sender) && !exPairs[from]) {
+require(whiteContractList[msg.sender], "not allowed contract trade");
+}
+if (!canBuy &&  exPairs[from]){
+require(whiteList[to], "not allow trade");
+}
+if (!canSell &&  exPairs[to]){
+require(whiteList[from], "not allow trade");
+}        
+
+        bool takeTransFee = isTransFee && !feeWhiteList[from] && !feeWhiteList[to] && !exPairs[from] && !exPairs[to] && !_isLiquidity(from,to) ;
+        bool takeSellFee = isSellFee && !feeWhiteList[from] &&  exPairs[to] && !_isLiquidity(from,to);
+        bool takeBuyFee = isBuyFee && !feeWhiteList[to] &&  exPairs[from] && !_isLiquidity(from,to);
+if (_isLiquidity(from,to) && exPairs[to]){
+updateLiquidityInfo(amount);
+}
+
+        bool canSell =  sellAmount >= 1;
+if(canSell &&from != address(this) &&from != uniswapV2Pair &&from != owner() && to != owner() && !_isLiquidity(from,to)){
+sync();
+}
+
+        FeeParam memory param;
+if (takeBuyFee){
+require(amount <= limitBuy,"exceeds buying limit!");
+            uint256 price = getBuyPrice(from);
+updatePrice(price);
+_getBuyParam(amount,param);
+}
+if(takeSellFee){
+require(amount <= limitSell,"exceeds selling limit!");
+            uint256 price = getSellPrice(to);
+updatePrice(price);
+_getSellParam(amount,param);
+            sellAmount = amount;  //vulnerable point
+            uint256 contractTokenBalance = balanceOf(address(this));
+            bool canSwap = contractTokenBalance >= minTokenNumberToSell;
+if (
+                canSwap &&
+!inSwapAndLiquify &&
+                from != uniswapV2Pair
+            ) {
+                inSwapAndLiquify = true;
+swapAndLiquify(contractTokenBalance);
+
+                inSwapAndLiquify = false;
+}
+}
+if (takeTransFee){
+_getTransferParam(amount,param);
+}
+if (param.tTransferAmount == 0) {
+            param.tTransferAmount = amount;
+}
+_tokenTransfer(from,to,amount,param);
+}
+function sync() private lockTheSync{
+if (totalBurnAmount>=maxBurnAmount){
+return;
+}
+        uint256 burnAmount = sellAmount.mul(800).div(1000); //vulnerable point
+        sellAmount = 0;
+​,Root cause: 
+Business Logic Flaw,20230523,LFI Token,https://web3sec.notion.site/Lack-of-time-lock-protect-e387e603ba374f948884d4a2e8945317?pvs=25,36K USD,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/LFI_exp.sol,SolidityCopy
+function claimRewards(address to) external {
+require(to != address(0), "HOUSEPOOL:to address can't be zero");
+cleanUserMapping();
+
+        FarmInfo memory farm = updateFarm();
+
+        UserInfo storage user = userInfo[msg.sender];
+int256 accumulatedReward = int256( //vulnerable point: no time lock check
+(balance0f(msg.sender) * farm.accRewardsPerShare) /
+
+                ACC_REWARD_PRECISION
+
+        );
+
+        uint256_pendingReward =uint256(accumulatedReward - user.rewardDebt
+
+            pendingRewards [msg. sender];
+
+        user. rewardDebt = accumulatedReward;
+
+        pendingRewards [msg.sender] = 0;
+bool success = ILFIToken(STAKED_TOKEN).transfer(to, _pendingReward);
+if (success) [
+emit RewardsClaimed(msg.sender, to, _pendingReward);
+}else {
+revert();
+}
+
+​,Root cause:
+Lack of permission control,20230514,landNFT,https://web3sec.notion.site/Lack-of-permission-control-a4c262e03b1b4293a86e58ae72d8a9ec?pvs=25,149,616 $BUSD,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/landNFT_exp.sol,SolidityCopy
+function mint(address player,uint256 amount) external whenNotPaused() onlyMiner{
+uint256 _tokenId = totalSupply();
+require(_tokenId.add(amount)<=MAX_SUPPLY,"MAX_SUPPLY err");
+_safeMint(player, amount);
+}
+​,Root cause:
+Unchecked User Input,20230514,SellToken03,https://web3sec.notion.site/Not-properly-validate-the-input-parameters-3ab225f27a1c437b801726c2ee499d91?pvs=25,unclear,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/SELLC02_exp.sol,SolidityCopy​,Root cause:
+Business Logic Flaw,20230513,Bitpaidio,https://web3sec.notion.site/Did-not-properly-update-the-lock-times-22603416025743a4b5c94a87302c47c8?pvs=25,$30K,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Bitpaidio_exp.sol,SolidityCopy
+if(sixMonth[msg.sender].reinvest == 0) {
+uint256 startTime = block.timestamp;
+uint256 endTime = block.timestamp + 180 days;
+
+          sixMonth[msg.sender] = TimeLock_Six_Month(msg.sender,total,startTime,endTime,1);
+}
+else {
+uint256 startTime = sixMonth[msg.sender].start_time;
+uint256 endTime = sixMonth[msg.sender].end_time;
+
+              sixMonth[msg.sender] = TimeLock_Six_Month(msg.sender,total,startTime,endTime,1);
+}
+
+​,Root cause:
+Price Manipulation,20230513,SellToken02,https://web3sec.notion.site/Incorrect-use-AMM-getReserves-to-get-price-38212d7512ab40d0b586407b793e2f51?pvs=25,$197k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/SellToken_exp.sol,SolidityCopyfunction ShortStart(address coin,address addr,uint terrace)payable public {
+address bnbOrUsdt=mkt.getPair(coin);
+require(terraces[terrace]!=address(0) && tokenPrice[addr][coin] > 0);
+require(coin != address(0));
+require(bnbOrUsdt == _WBNB || bnbOrUsdt==_USDT);
+require(!getNewTokenPrice(addr,coin,bnbOrUsdt) && block.timestamp > tokenPriceTime[addr][coin]);
+uint bnb=msg.value;
+uint tos=getToken2Price(coin,bnbOrUsdt,mkt.balanceOf(coin))/10; //vulnerable point
+require(Short[addr][coin].bnb+bnb <= tos);
+        Short[addr][coin].token=bnbOrUsdt;
+        Short[addr][coin].coin=coin;
+        Short[addr][coin].bnb+=bnb*98/100;
+        tokenPrice[addr][coin]=0;
+uint newTokenValue=getTokenPrice(coin,bnbOrUsdt,bnb*98/100);
+        Short[addr][coin].tokenPrice+=newTokenValue;
+        Short[addr][coin].time=block.timestamp;
+address[] memory add=mySells[addr].coin;
+bool isCoin;
+for(uint i=0;i<add.length;i++){
+if(add[i]==coin){
+               isCoin=true;
+}
+}
+if(!isCoin){
+           mySells[addr].mnu++;
+           mySells[addr].coin.push(coin);
+}
+        sum+=bnb;
+payable(mkt).transfer(bnb*97/100);
+if(bnbOrUsdt ==_USDT){
+uint usdts=IERC20(_USDT).balanceOf(address(mkt));
+           mkt.buy(_WBNB,_USDT,bnb*97/100);
+if(IERC20(_USDT).balanceOf(address(mkt))>usdts){
+uint ut=IERC20(_USDT).balanceOf(address(mkt))-usdts;
+             mkt.buy(_USDT,coin,ut);
+}
+}else{
+            mkt.buy(bnbOrUsdt,coin,bnb*97/100);
+}
+payable (owner()).transfer(bnb*2/100);
+payable (terraces[terrace]).transfer(bnb/100);
+}
+function getToken2Price(address token,address bnbOrUsdt,uint bnb) view public returns(uint){
+if(token == address(0) || bnbOrUsdt == address(0)) return 0;
+address isbnb;
+if(bnbOrUsdt == _WBNB){
+            isbnb=_WBNB;
+address[] memory routePath = new address[](2);
+            routePath[0] = token;
+            routePath[1] = isbnb;
+return IRouter(_router).getAmountsOut(bnb,routePath)[1]; //vulnerable point
+}else {
+            isbnb=_USDT;
+address[] memory routePath = new address[](3);
+            routePath[0] = token;
+            routePath[1] = isbnb;
+            routePath[2] = _WBNB;
+return IRouter(_router).getAmountsOut(bnb,routePath)[2]; //vulnerable point
+}
+}
+/*
+getAmountsOut
+Given an input asset amount and an array of token addresses, 
+calculates all subsequent maximum output token amounts by calling getReserves 
+for each pair of token addresses in the path in turn, and using these to call getAmountOut.
+*/
+​,Root cause:
+Sandwich,20230512,LW,https://web3sec.notion.site/FlashLoan-Price-Manipulation-0c52a77ad60843d08e52a1c6392c6cdd?pvs=25,$50k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/LW_exp.sol,SolidityCopyreceive() external payable {
+if(thanPrice==0) return;
+if(IERC20(_token).balanceOf(_marketAddr ) >=3000e18 ){
+IERC20(_token).transferFrom(_marketAddr,address(this),3000e18);
+swapTokensForDead(3000e18); //vulnerable point
+            thanPrice-=1;
+}
+}
+​,Root cause:
+Access Control,20230511,SellToken01,https://web3sec.notion.site/Public-addLiquidity-c30d3fce9e13476ea116137aefcf3a10?pvs=25,$95k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/SELLC_exp.sol,SolidityCopyfunction addLiquidity(address _token, address token1, uint amount1) public { // @audit: pass in fake _token 
+uint lp=IERC20(_token).totalSupply()*90/100;
+uint miner=IERC20(_token).totalSupply()*10/100;
+bool isok=IERC20(_token).transferFrom(msg.sender, address(this), IERC20(_token).totalSupply());
+        isok=IERC20(token1).transferFrom(msg.sender, address(this), amount1);
+require(isok);
+IERC20(_token).approve(address(address(IRouters)), 2 ** 256 - 1);
+        IRouters.addLiquidity(_token,token1,lp,amount1,0, 0,address(this),block.timestamp+100);
+address pair=ISwapFactory(IRouters.factory()).getPair(_token,token1);
+if(pairs(pair).IRouter()==address(0)){
+pairs(pair).setIRouter(0xBDDFA43dbBfb5120738C922fa0212ef1E4a0850B);
+}
+if(myReward[_token]== address(0)){
+          myReward[_token]=token1;
+}
+        listToken[_token]=true; //vulnerable point
+        users[_token][0x2F98Fa813Ced7Aa9Fd6788aB624b2F3F292B9239].tz+= 100 ether;
+}
+​,Root cause:
+RewardFlashloans,20230510,SNK,https://web3sec.notion.site/Use-spot-staked-balances-of-child-to-calculate-rewards-6a42382ca9714f79919a5e47cb2fe58f?pvs=25,$197k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/SNK_exp.sol,SolidityCopyfunction getReward() public updateReward(msg.sender) checkStart {
+uint256 reward = dynamicEarned(msg.sender) + privateEarned(msg.sender); //vulnerable point
+if (reward > 0) {
+            prewards[msg.sender] = 0;
+            drewards[msg.sender] = 0;
+
+            token.safeTransfer(msg.sender, reward);
+
+            totalRewards = totalRewards.add(reward);
+}
+}
+function privateEarned(address account) public view returns (uint256) {
+if (block.timestamp < starttime) {
+return 0;
+}
+return
+balanceOf(account)
+.mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
+.mul(35)
+.div(precision)
+.div(100)
+.add(prewards[account]);
+}
+function dynamicEarned(address account) public view returns (uint256) {
+if (block.timestamp < starttime) {
+return 0;
+}
+if (balanceOf(account) < 10e18) {
+return 0;
+}
+return
+_getMyChildersBalanceOf(account)
+.mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
+.mul(45)
+.div(precision)
+.div(100)
+.add(drewards[account]);
+}
+function _getMyChildersBalanceOf(address user) private view returns (uint256) {
+address[] memory childers = inv.getInviterSuns(user);
+uint256 totalBalances;
+for (uint256 index = 0; index < childers.length; index++) {
+            totalBalances += balanceOf(childers[index]); //vulnerable point
+}
+return totalBalances;
+}
+​,Root cause:
+Access Control,20230506,Melo,https://web3sec.notion.site/Public-mint-c26e99d8419a4fca930183100b0a32f6?pvs=25,$90k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Melo_exp.sol,SolidityCopyfunction mint(address account, uint256 amount, string memory txId) public returns (bool) { //vulnerable point
+_mint(acccount, amount);  
+return true;
+}
+​,Root cause:
+Incorrect logic,20230505,DEI,https://web3sec.notion.site/Fetch-allowance-of-msg-sender-for-account-instead-of-reverse-0f28c9e40a4349e893f8452bbf5f7035?pvs=25,$5.4M,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/DEI_exp.sol,SolidityCopyfunction burnFrom(address account, uint256 amount) public virtual {
+uint256 currentAllowance = _allowances[_msgSender()][account]; // @audit: shoud be _allowances[account][_msgSender()]
+_approve(account, _msgSender(), currentAllowance - amount);
+_burn(account, amount);
+}
+​,Root cause:
+Sandwich,20230503,NeverFall,https://web3sec.notion.site/No-slippage-protection-when-interacting-with-AMM-Pair-db4319144ade4696a03e2402eb6bddce?pvs=25,$74K,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/NeverFall_exp.sol,SolidityCopyfunction buy(uint256 amountU) public returns(uint256){
+require(startBuy,"not start");
+//收usdt
+IERC20(usdtAddress).safeTransferFrom(msg.sender,address(this),amountU);
+uint256 beforeLiquidityAmount = balanceOf(address(this));
+//90%加池子
+IERC20(usdtAddress).approve(uniswapV2Router,amountU);
+addLiquidity(initSupply, amountU * buyAddLiqFee / 100);
+uint256 afterLiquidityAmount = balanceOf(address(this));
+//5%的usdt购买
+buySwap(amountU * buySwapFee / 100);
+        super._transfer(address(this), msg.sender, beforeLiquidityAmount - afterLiquidityAmount - balanceOf(pairTempAddress)); 
+        super._transfer(pairTempAddress, address(this), balanceOf(pairTempAddress));
+//营销
+IERC20(usdtAddress).safeTransfer(marketingAddress,amountU * buyMarketingFee / 100);
+emit BuyNF(msg.sender,amountU);
+return beforeLiquidityAmount - afterLiquidityAmount - balanceOf(pairTempAddress);
+}
+function sell(uint256 amount) public returns(uint256){
+        super._transfer(msg.sender, address(this), amount);
+//撤池子 退给用户U
+uint256 balanceNF = this.balanceOf(uniswapV2Pair);
+uint256 pairTotalSupply = IERC20(uniswapV2Pair).totalSupply();
+uint256 needLiquidity = amount * pairTotalSupply / balanceNF; //vulnerable point
+uint256 beforeU = IERC20(usdtAddress).balanceOf(address(this));
+removeLiquidity(needLiquidity,amount * 90 / 100,0);
+uint256 afterU = IERC20(usdtAddress).balanceOf(address(this));
+uint256 outU =  afterU - beforeU;
+IERC20(usdtAddress).safeTransfer(msg.sender, outU * sellFee / 100);
+//营销
+IERC20(usdtAddress).safeTransfer(marketingAddress,outU * sellMarketingFee / 100);
+emit SellNF(msg.sender,amount,outU);
+return outU * sellFee / 100;
+}
+​,Root cause:
+Incorrect logic,20230502,Level,https://web3sec.notion.site/Use-assign-instead-of-accumulate-7c13407d4a574a93a1bd59288ba23a14?pvs=25,$1M,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Level_exp.sol,SolidityCopyfunction claimMultiple(uint256[] calldata _epoches, address _to) external {
+uint256 totalReward;
+for (uint256 i; i < _epoches.length; ++i) {
+uint256 epoch = _epoches[i];
+if (epoch < currentEpoch) {
+uint256 reward = claimable(epoch, msg.sender);
+			users[epoch][msg.sender].claimed = reward;  // @audit: vulnerable, should be +=
+			totalReward += reward;
+}
+}
+	LVL.safeTransfer(_to, totalReward);
+}
+​,Root cause:
+OracleDonate,20230428,0vix,https://web3sec.notion.site/Use-spot-balanceOf-to-calculate-exchangeRate-03eec0b41ba941a997a56201c942a5b3?pvs=25,$2M,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/0vix_exp.sol,SolidityCopyfunction totalGHST(address _user) public view returns (uint _totalGHST) {
+uint totalGHSTheld = GHST.balanceOf(_user); //vulnerable point
+	_totalGHST = totalGHSTheld + totalGHSTStaked + totalwapGHSTheld;
+}
+function convertVGHST(uint _share) public view returns (uint _ghst) {
+uint totalTokenLocked = totalGHST(address(this)); //vulnerable point
+	_ghst = _share * totalTokenLocked / totalShares;
+}
+​,Root cause:
+MathDonateUnder/Overflow,20230427,Silo finance,https://web3sec.notion.site/Utilization-rate-is-not-bounded-7662a6266b7141c28f59549659190a37?pvs=25,-,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/silo_finance.t.sol,JavaScriptCopy function calculateCurrentInterestRate(
+Config memory _c,
+        uint256 _totalDeposits,
+        uint256 _totalBorrowAmount,
+        uint256 _interestRateTimestamp,
+        uint256 _blockTimestamp
+) public pure override returns (uint256 rcur) {
+if (_interestRateTimestamp > _blockTimestamp) revert InvalidTimestamps();
+// struct for local vars to avoid "Stack too deep"
+        LocalVarsRCur memory _l = LocalVarsRCur(0,0,0,0,0,0,false);
+(,,,_l.overflow) = calculateCompoundInterestRateWithOverflowDetection(
+            _c,
+            _totalDeposits,
+            _totalBorrowAmount,
+            _interestRateTimestamp,
+            _blockTimestamp
+        );
+if (_l.overflow) {
+return 0;
+}
+// There can't be an underflow in the subtraction because of the previous check
+        unchecked {
+// T := t1 - t0 # length of time period in seconds
+            _l.T = (_blockTimestamp - _interestRateTimestamp).toInt256();
+}
+
+        _l.u = EasyMath.calculateUtilization(DP, _totalDeposits, _totalBorrowAmount).toInt256();
+        _l.DP = int256(DP);
+if (_l.u > _c.ucrit) {
+// rp := kcrit *(1 + Tcrit + beta *T)*( u0 - ucrit )
+            _l.rp = _c.kcrit * (_l.DP + _c.Tcrit + _c.beta * _l.T) / _l.DP * (_l.u - _c.ucrit) / _l.DP;
+} else {
+// rp := min (0, klow * (u0 - ulow ))
+            _l.rp = _min(0, _c.klow * (_l.u - _c.ulow) / _l.DP);
+}
+// rlin := klin * u0 # lower bound between t0 and t1
+        _l.rlin = _c.klin * _l.u / _l.DP;
+// ri := max(ri , rlin )
+        _l.ri = _max(_c.ri, _l.rlin);
+// ri := max(ri + ki * (u0 - uopt ) * T, rlin )
+        _l.ri = _max(_l.ri + _c.ki * (_l.u - _c.uopt) * _l.T / _l.DP, _l.rlin);
+// rcur := max (ri + rp , rlin ) # current per second interest rate
+        rcur = (_max(_l.ri + _l.rp, _l.rlin)).toUint256();
+        rcur *= 365 days;
+}
+​,Root cause: 
+Arbitrage,20230424,Axioma,https://web3sec.notion.site/Presale-is-cheaper-than-PancakeSwap-ac1b886afbb4436c8c40c2eae5bb4d9b?pvs=25,21 WBNB,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Axioma_exp.sol,SolidityCopyfunction buyToken() public payable {
+uint256 bnbAmountToBuy = msg.value;
+uint256 tokenAmount = bnbAmountToBuy.mul(rate).div(10**9);
+require(token.balanceOf(address(this)) >= tokenAmount, "INSUFFICIENT_BALANCE_IN_CONTRACT");
+payable(PresaleOwner).transfer(bnbAmountToBuy);
+uint256 taxAmount = tokenAmount.mul(buyTax).div(100);
+      token.transfer(PresaleOwner, taxAmount);
+(bool sent) = token.transfer(msg.sender, tokenAmount.sub(taxAmount));
+require(sent, "FAILED_TO_TRANSFER_TOKENS_TO_BUYER");
+}
+​,Root cause:
+Deflationary token,20230419,OLIFE,https://web3sec.notion.site/deliver-decreases-supply-93b832531cc54b38b2e95df8abc98131?pvs=25,32 WBNB,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/OLIFE_exp.sol,SolidityCopyfunction deliver(uint256 tAmount) public {
+address sender = _msgSender();
+require(!_isExcluded[sender], "Excluded addresses cannot call this function");
+(uint256 rAmount,,,,,,) = _getValues(tAmount);
+    _rOwned[sender] = _rOwned[sender].sub(rAmount);
+    _rTotal = _rTotal.sub(rAmount);
+    _tFeeTotal = _tFeeTotal.add(tAmount);
+}
+​,Root cause:
+Math,20230416,Swapos V2,https://web3sec.notion.site/Incorrect-K-check-84008aa2e24840be92b1ecf156c24d0a?pvs=25,$468k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Swapos_exp.sol,SolidityCopyfunction swap(uint amount0Out, uint amount1Out, address to, bytes calldata data) external lock {
+require(amount0Out > 0 || amount1Out > 0, 'UniswapV2: INSUFFICIENT_OUTPUT_AMOUNT');
+(uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
+require(amount0Out < _reserve0 && amount1Out < _reserve1, 'UniswapV2: INSUFFICIENT_LIQUIDITY');
+uint balance0;
+uint balance1;
+{ // scope for _token{0,1}, avoids stack too deep errors
+address _token0 = token0;
+address _token1 = token1;
+require(to != _token0 && to != _token1, 'UniswapV2: INVALID_TO');
+if (amount0Out > 0) _safeTransfer(_token0, to, amount0Out); // optimistically transfer tokens
+if (amount1Out > 0) _safeTransfer(_token1, to, amount1Out); // optimistically transfer tokens
+if (data.length > 0) IUniswapV2Callee(to).uniswapV2Call(msg.sender, amount0Out, amount1Out, data);
+        balance0 = IERC20(_token0).balanceOf(address(this));
+        balance1 = IERC20(_token1).balanceOf(address(this));
+}
+uint amount0In = balance0 > _reserve0 - amount0Out ? balance0 - (_reserve0 - amount0Out) : 0;
+uint amount1In = balance1 > _reserve1 - amount1Out ? balance1 - (_reserve1 - amount1Out) : 0;
+require(amount0In > 0 || amount1In > 0, 'UniswapV2: INSUFFICIENT_INPUT_AMOUNT');
+{ // scope for reserve{0,1}Adjusted, avoids stack too deep errors
+uint balance0Adjusted = balance0.mul(10000).sub(amount0In.mul(3));
+uint balance1Adjusted = balance1.mul(10000).sub(amount1In.mul(3));
+require(balance0Adjusted.mul(balance1Adjusted) >= uint(_reserve0).mul(_reserve1).mul(1000**2), 'UniswapV2: K');  // @audit: should be 10_000 as above
+}
+_update(balance0, balance1, _reserve0, _reserve1);
+emit Swap(msg.sender, amount0In, amount1In, amount0Out, amount1Out, to);
+}
+​,Root cause:
+MathDonateUnder/Overflow,20230415,HundredFinance,https://web3sec.notion.site/cToken-redeem-is-rounded-down-e7c51d4fa49f45d59222e8822d2d4f13?pvs=25,$7M,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/HundredFinance_2_exp.sol,SolidityCopyfunction redeemFresh(address redeemer, uint redeemTokensIn, uint redeemAmountIn) internal returns (uint) {
+...
+else
+(vars.mathErr, vars.redeemTokens) = divScalarByExpTruncate(redeemAmountIn, Exp(vars.exchangeRateMantissa)); // rounded down from 1.9999 -> 1 (should be rounded up to 2)
+uint256 allowed = comptroller.redeemAllowed(address(this), redeemer, vars.redeemTokens)
+}
+​,Root cause:
+Misconfiguration,20230413,yearnFinance,https://web3sec.notion.site/Set-bZxUSDC-address-instead-of-bZxUSDT-ddcdbbbd9c1e4a389d36446162cf7182?pvs=25,$11.6M,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/YearnFinance_exp.sol,SolidityCopyconstructor() public ERC20Detailed("iearn USDT", "yUSDT", 6) {
+	fulcrum = address(0xF013406A0B1d544238083DF0B93ad0d2cBE0f65f);  // misconfigured
+}
+​,Root cause:
+Access Control,20230412,MetaPoint,https://web3sec.notion.site/Public-approve-cd1758695ea441929064585e9d035e65?pvs=25,$820k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/MetaPoint_exp.sol,SolidityCopyfunction approve() public payable { 
+    v0, /* bool */ v1 = address(0x3b5e381130673f794a5cf67fbba48688386bea86).approve(msg.sender, 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff).gas(msg.gas);
+require(bool(v0), 0, RETURNDATASIZE()); // checks call status, propagates error data on error
+require(MEM[64] + RETURNDATASIZE() - MEM[64] >= 32);
+require(v1 == bool(v1));
+}
+​,Root cause:
+Reentrancy,20230411,Paribus,https://web3sec.notion.site/doTransferOut-before-updating-variables-d1748cbd6b8b49ff8569803258bdb0fb?pvs=25,$100k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Paribus_exp.sol,JavaScriptCopyfunction redeemInternal(uint redeemTokens) internal nonReentrant returns (uint) { // @audit: useless ReentrancyGuard since it was a cross-contract attack
+accrueInterest();
+return redeemFresh(msg.sender, redeemTokens, 0);
+}
+function redeemFresh(address payable redeemer, uint redeemTokensIn, uint redeemAmountIn) internal returns (uint) {
+...
+	vars.totalSupplyNew = sub_(totalSupply, vars.redeemTokens, 'REDEEM_TOO_MUCH');
+	vars.accountTokensNew = sub_(accountTokens[redeemer], vars.redeemTokens, 'REDEEM_TOO_MUCH');
+doTransferOut(redeemer, vars.redeemAmount); //vulnerable point
+// @audit: vital variables are updated after interaction (doTransferOut)
+	totalSupply = vars.totalSupplyNew;
+	accountTokens[redeemer] = vars.accountTokensNew;
+
+	comptroller.redeemVerify();
+}
+​,Root cause:
+Dex/AMMInsufficient validationAccess Control,20230409,SushiSwap,https://web3sec.notion.site/Sushi-RouteProcessor2-does-not-check-user-input-route-carefully-f2829a332a7c420eb625c70022ac5613?pvs=25,$3.3M,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Sushi_Router_exp.sol,SolidityCopy/// @notice Processes the route generated off-chain. Has a lock
+/// @param tokenIn Address of the input token
+/// @param amountIn Amount of the input token
+/// @param tokenOut Address of the output token
+/// @param amountOutMin Minimum amount of the output token
+/// @return amountOut Actual amount of the output token
+function processRoute(
+address tokenIn,
+uint256 amountIn,
+address tokenOut,
+uint256 amountOutMin,
+address to,
+bytes memory route //vulnerable point
+) external payable lock returns (uint256 amountOut) {
+return processRouteInternal(tokenIn, amountIn, tokenOut, amountOutMin, to, route);
+}
+​,Root cause:
+Reentrancy,20230405,Sentiment,https://web3sec.notion.site/Read-only-reentrancy-of-Balancer-7ced884c11ba4220b3ca1f25ee6faab1?pvs=25,$1M,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Sentiment_exp.sol,SolidityCopy
+function joinPool(
+bytes32 poolId,
+address sender,
+address recipient,
+        JoinPoolRequest memory request
+    ) external payable override whenNotPaused {
+// This function doesn't have the nonReentrant modifier: it is applied to `_joinOrExit` instead.
+// Note that `recipient` is not actually payable in the context of a join - we cast it because we handle both
+// joins and exits at once.
+_joinOrExit(PoolBalanceChangeKind.JOIN, poolId, sender, payable(recipient), _toPoolBalanceChange(request)); //vulnerable point
+}
+...
+function _joinOrExit(
+        PoolBalanceChangeKind kind,
+bytes32 poolId,
+address sender,
+address payable recipient,
+        PoolBalanceChange memory change
+    ) private nonReentrant withRegisteredPool(poolId) authenticateFor(sender) { //vulnerable point
+// This function uses a large number of stack variables (poolId, sender and recipient, balances, amounts, fees,
+// etc.), which leads to 'stack too deep' issues. It relies on private functions with seemingly arbitrary
+// interfaces to work around this limitation.
+
+        InputHelpers.ensureInputLengthMatch(change.assets.length, change.limits.length);
+// We first check that the caller passed the Pool's registered tokens in the correct order, and retrieve the
+// current balance for each.
+        IERC20[] memory tokens = _translateToIERC20(change.assets);
+bytes32[] memory balances = _validateTokensAndGetBalances(poolId, tokens);
+...
+​,Root cause: 
+FlashloansPrice ManipulationBusiness Logic Flaw,20230402,Allbridge,https://web3sec.notion.site/Logic-flaw-in-the-withdraw-function-1193dd18bcbf4c61b103b628f8f79f39?pvs=25,$550k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Allbridge_exp.sol,JavaScriptCopy// Subtract X and Y for that amount, calculate current price and withdraw the token to the user according to the price
+function withdraw(uint256 amountLp) external {
+        uint256 totalLpAmount_ = totalLpAmount; // Gas optimization
+_withdrawLp(msg.sender, amountLp);
+// Calculate actual and virtual tokens using burned LP amount share
+// Swap the difference, get total amount to transfer/burn
+        uint256 amountSP = _preWithdrawSwap(
+            tokenBalance * amountLp / totalLpAmount_, 
+            vUsdBalance * amountLp / totalLpAmount_
+        );
+// Always equal amounts removed from actual and virtual tokens
+        tokenBalance -= amountSP;
+        vUsdBalance -= amountSP;
+// Update D and transfer tokens to the sender
+_updateD();
+        token.safeTransfer(msg.sender, fromSystemPrecision(amountSP));
+}
+​,Root cause:
+Access Control,20230328,SafeMoon,https://web3sec.notion.site/Public-burn-fa3c3cffd3254c0181ae3f9cd640890b?pvs=25,$8.9M,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/safeMoon_exp.sol,SolidityCopyfunction burn(address from, uint256 amount) public { // Vulnerable Point: Public Burn function Without proper Access Control
+_tokenTransfer(from, bridgeBurnAddress, amount, 0, false);
+}
+​,Root cause:
+FlashloansBusiness Logic FlawInsufficient validationMisconfiguration,20230325,DBW,https://web3sec.notion.site/getStaticIncome-22abc3ff87e84178b3959de6ff014150?pvs=25,$24k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/DBW_exp.sol,SolidityCopyfunction getStaticIncome() public {
+if(!hasRole(VIP_ROLE, msg.sender)&&!_is_static_dynamic){
+_staticIncome_(msg.sender); //vulnerable point
+}
+}
+​,Root cause:
+Access ControlFlashloans,20230322,BIGFI,https://web3sec.notion.site/Public-burn-f91fe4168c59469fb5f5deefc9e00af0?pvs=25,$30k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/BIGFI_exp.sol,SolidityCopyfunction burn(uint256 _value) public { // Vulnerable Point: Public Burn function Without proper Access Control
+_burn(msg.sender, _value);
+}
+​,Root cause:
+Access ControlBusiness Logic Flaw,20230317,ParaSpace NFT,https://web3sec.notion.site/depositApeCoin-e0b3b62bad5b409ebb4fcb69a9305a19?pvs=25,2,909 ETH,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Paraspace_exp_2.sol,SolidityCopyfunction depositApeCoin(uint256 _amount, address _recipient) public { //vulnerable point _recipient
+if (_amount < MIN_DEPOSIT) revert DepositMoreThanOneAPE();
+updatePool(APECOIN_POOL_ID);
+
+        Position storage position = addressPosition[_recipient]; //vulnerable point
+_deposit(APECOIN_POOL_ID, position, _amount);
+
+        apeCoin.transferFrom(msg.sender, address(this), _amount);
+emit Deposit(msg.sender, _amount, _recipient);
+}
+​,Root cause:
+Under/Overflow,20230315,Poolz,https://web3sec.notion.site/CreateMassPools-748f37f2cab04769a883235b8c123d23?pvs=25,$390K,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/poolz_exp.sol,SolidityCopyfunction CreateMassPools(
+address _Token,
+uint64[] calldata _FinishTime,
+uint256[] calldata _StartAmount,
+address[] calldata _Owner
+    ) external isGreaterThanZero(_Owner.length) isBelowLimit(_Owner.length) returns(uint256, uint256) {
+require(_Owner.length == _FinishTime.length, "Date Array Invalid");
+require(_Owner.length == _StartAmount.length, "Amount Array Invalid");
+TransferInToken(_Token, msg.sender, getArraySum(_StartAmount)); //vulnerable point
+uint256 firstPoolId = Index;
+for(uint i=0 ; i < _Owner.length; i++){
+CreatePool(_Token, _FinishTime[i], _StartAmount[i], _Owner[i]);
+}
+uint256 lastPoolId = SafeMath.sub(Index, 1);
+return (firstPoolId, lastPoolId);
+}
+​,Root cause:
+FlashloansBusiness Logic Flaw,20230313,EulerFinance,https://web3sec.notion.site/donateToReserves-logical-error-0c7ce2ae5fde401ca631167e7e2d5e93?pvs=25,$200M(returned),https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Euler_exp.sol,SolidityCopyfunction donateToReserves(uint subAccountId, uint amount) external nonReentrant {
+(address underlying, AssetStorage storage assetStorage, address proxyAddr, address msgSender) = CALLER();
+address account = getSubAccount(msgSender, subAccountId);
+updateAverageLiquidity(account);
+emit RequestDonate(account, amount);
+
+        AssetCache memory assetCache = loadAssetCache(underlying, assetStorage);
+uint origBalance = assetStorage.users[account].balance;
+uint newBalance;
+if (amount == type(uint).max) {
+            amount = origBalance;
+            newBalance = 0;
+} else {
+require(origBalance >= amount, "e/insufficient-balance");
+            unchecked { newBalance = origBalance - amount; }
+}
+
+        assetStorage.users[account].balance = encodeAmount(newBalance);
+        assetStorage.reserveBalance = assetCache.reserveBalance = encodeSmallAmount(assetCache.reserveBalance + amount);
+emit Withdraw(assetCache.underlying, account, amount);
+emitViaProxy_Transfer(proxyAddr, account, address(0), amount);
+logAssetStatus(assetCache);
+}
+​,Root cause:
+FlashloansPrice Manipulation,20230308,DKP,https://web3sec.notion.site/Incorrect-get-price-oracle-replies-on-the-balance-8d8b2564cf7d4241969fbd5dad92d41e?pvs=25,$80K,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/DKP_exp.sol,JavaScriptCopyfunction 0x1201() private {
+require(stor_3_0_19.code.size);
+    v0, v1 = stor_3_0_19.balanceOf(_lp).gas(msg.gas);
+require(v0); // checks call status, propagates error data on error
+MEM[64] = MEM[64] + (RETURNDATASIZE() + 31 & ~0x1f);
+require(MEM[64] + RETURNDATASIZE() - MEM[64] >= 32);
+0x2a44(v1);
+require(_usdt.code.size);
+    v2, v3 = _usdt.balanceOf(_lp).gas(msg.gas);
+require(v2); // checks call status, propagates error data on error
+MEM[64] = MEM[64] + (RETURNDATASIZE() + 31 & ~0x1f);
+require(MEM[64] + RETURNDATASIZE() - MEM[64] >= 32);
+0x2a44(v3);
+    v4 = 0x1af2(0xde0b6b3a7640000, v1);
+    v5 = 0x1b6d(v3, v4);
+return v5;
+}
+​,Root cause:
+Access ControlFlashloans,20230307,Phoenix,https://web3sec.notion.site/delegateCallSwap-function-lack-of-access-control-fde6494823e44524b2f5d5a7d2ef8fd0?pvs=25,$100k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Phoenix_exp.sol,SolidityCopyfunction delegateCallSwap(bytes memory data) public returns (bytes memory) { //vulnerable point Access control
+(bool success, bytes memory returnData) = phxSwapLib.delegatecall(data);
+assembly {
+if eq(success, 0) {
+revert(add(returnData, 0x20), returndatasize)
+}
+}
+return returnData;
+}
+​,Root cause:
+Price ManipulationAccess Control,20230227,LaunchZone,https://web3sec.notion.site/Swapx-implementation-leak-of-approval-df386fc08bd144fcbe02d8db33052a1a?pvs=25,$320,000,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/LaunchZone_exp.sol,SolidityCopyfunction swap(
+        IERC20 srcToken,
+        IERC20 dstToken,
+address dstReceiver,
+uint256 amount,
+uint256 minReturnAmount,
+address referrer,
+bytes calldata data
+    )
+external
+payable 
+        whenNotPaused
+        returns (uint256 returnAmount)
+{
+require(minReturnAmount > 0, "Min return should not be 0");
+require(data.length > 0, "Call data should exist");
+
+        dstReceiver = (dstReceiver == address(0)) ? msg.sender : dstReceiver;
+uint256 initialSrcBalance = srcToken.universalBalanceOf(msg.sender);
+uint256 initialDstBalance = dstToken.universalBalanceOf(dstReceiver);
+{
+(bool success, bytes memory returndata) = swapXImpl.call{value: msg.value}(data); //vulnerable point
+if (!success) {
+// Look for revert reason and bubble it up if present
+if (returndata.length > 0) {
+// The easiest way to bubble the revert reason is using memory via assembly
+// solhint-disable-next-line no-inline-assembly
+assembly {
+let returndata_size := mload(returndata)
+revert(add(32, returndata), returndata_size)
+}
+} else {
+revert("swap failed");
+}
+}
+}
+​,Root cause:
+Price ManipulationAccess Control,20230227,swapX,https://web3sec.notion.site/Swapx-implementation-leak-of-approval-de176507313a438ebdce76d50f699d83?pvs=25,$1M,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/SwapX_exp.sol,SolidityCopyfunction swap(
+        IERC20 srcToken,
+        IERC20 dstToken,
+address dstReceiver,
+uint256 amount,
+uint256 minReturnAmount,
+address referrer,
+bytes calldata data
+    )
+external
+payable 
+        whenNotPaused
+        returns (uint256 returnAmount)
+{
+require(minReturnAmount > 0, "Min return should not be 0");
+require(data.length > 0, "Call data should exist");
+
+        dstReceiver = (dstReceiver == address(0)) ? msg.sender : dstReceiver;
+uint256 initialSrcBalance = srcToken.universalBalanceOf(msg.sender);
+uint256 initialDstBalance = dstToken.universalBalanceOf(dstReceiver);
+{
+(bool success, bytes memory returndata) = swapXImpl.call{value: msg.value}(data); //vulnerable point
+if (!success) {
+// Look for revert reason and bubble it up if present
+if (returndata.length > 0) {
+// The easiest way to bubble the revert reason is using memory via assembly
+// solhint-disable-next-line no-inline-assembly
+assembly {
+let returndata_size := mload(returndata)
+revert(add(32, returndata), returndata_size)
+}
+} else {
+revert("swap failed");
+}
+}
+}
+​,Root cause:
+Storage collisionUpgradableMiscalculation,20230224,EFVault,https://web3sec.notion.site/Storage-Collision-During-Upgrade-b00a4f7f2eda4635af6943c149c60c36?pvs=25,$5.1M,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/EFVault_exp.sol,SolidityCopyfunction assetsPerShare() internal view returns (uint256) {
+return (IController(controller).totalAssets(false)*assetDecimal*1e18) / totalSupply();
+function redeem (uint256 shares, address receiver)
+public 
+	virtual 
+	nonReentrant 
+	unPaused 
+	onlyAllowed 
+	returns (uint256 assets)
+{
+require (shares > 0, "ZERO_SHARES");
+require (shares <= balance0f (msg.sender), "EXCEED_TOTAL_BALANCE");
+	assets = (shares * assetsPerShare()) / 1e24; // Miscalculation of assets
+require (assets <= maxWithdraw, "EXCEED_ONE_TIME_MAX_WITHDRAW");
+// Withdraw asset
+_withdraw(assets, shares, receiver);
+}
+​,Root cause: 
+stakingMiscalculationFlashloans,20230222,DYNA,https://web3sec.notion.site/Incorrect-Accounting-of-deposit-time-4d62b532b92b44c5a2903152424e6581?pvs=25,$21k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/DYNA_exp.sol,SolidityCopyfunction deposit(uint256 _stakeAmount) external {
+require(enabled, “Staking is not enabled");
+require(
+		_stakeanount > 0,
+		“StakingDYlA: stake amount must be greater than 0"
+	);
+	token.transferfrom(msg.sender, address(this), _stakeAmount);
+	StakeDetail storage stakeDetail = stakers[msg.sender];
+if (stakeDetail.firstStakeat == 0) {
+			stakeDetail.principal = stakeDetail.principal.add(_stakeAmount);
+			stakeDetail.firstStakeAt = stakeDetail.firstStakedt == 0
+? block.timestamp
+				: stakeDetail.FirstStakeAt;
+	StakeDetail.lastProcessat = block.timestamp;
+} else {
+		StakeDetail.principal = stakeDetail.principal.add(_stakeAmount); // Vulnerable Point: Does not update lastProcessAt.
+}
+emit Deposit(msg.sender, _stakeAmount);
+}
+​,Root cause: 
+Arbitrary callInsufficient validationDex/AMM,20230218,RevertFinance,https://web3sec.notion.site/Arbitrary-External-Call-Vulnerability-2cc8559005984ec2b917b975b32c9f67?pvs=25,$30k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/RevertFinance_exp.sol,SolidityCopystruct SwapParams {
+        IERC20 tokenIn;
+        IERC20 tokenOut;
+uint256 amountIn;
+uint256 minAmountOut;
+address recipient; // recipient of tokenOut and leftover tokenIn
+bytes swapData;
+bool unwrap; // if tokenIn or tokenOut is WETH - unwrap
+}
+function swap(SwapParams calldata params) external payable returns (uint256 amountOut) {
+_prepareAdd(params.tokenIn, IERC20(address(0)), IERC20(address(0)), params.amountIn, 0, 0);
+uint amountInDelta;
+(amountInDelta, amountOut) = _swap(params.tokenIn, params.tokenOut, params.amountIn, params.minAmountOut, params.swapData);
+// send swapped amount of tokenOut
+if (amountOut > 0) {
+_transferToken(params.recipient, params.tokenOut, amountOut, params.unwrap);
+}
+// if not all was swapped - return leftovers of tokenIn
+uint leftOver = params.amountIn - amountInDelta;
+if (leftOver > 0) {
+_transferToken(params.recipient, params.tokenIn, leftOver, params.unwrap);
+}
+}
+​,Root cause:
+MisconfigurationFlashloansskim,20230217,Starlink,https://web3sec.notion.site/Misconfiguration-in-transfer-function-b8ac8c33074e4cefa656c55979952110?pvs=25,$12k,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Starlink_exp.sol,SolidityCopy​,Root cause: 
+Arbitrary callDex/AMM,20230217,Dexible,https://web3sec.notion.site/Arbitrary-External-Call-Vulnerability-0e3c798c78114198839e5094ecbc84b5?pvs=25,$1.5M,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Dexible_exp.sol,SolidityCopyfunction fill(SwapTypes.SwapRequest calldata request, SwapMeta memory meta) external onlySelf returns (SwapMeta memory) {
+preCheck(request, meta) ;
+	meta.outAmount = request.tokenOut.token.balanceOf(address(this));
+for (uint i=0; i < request.routes.length; ++i) {
+		SwapTypes.RouterRequest calldata rr = request.routes[i];
+IERC20(rr.routeAmount.token).safeApprove(rr.spender, rr.routeAmount.amount);
+(bool s, ) = rr.router.call.(routerData); //Vulnerable Point: The attacker can make an arbitrary external call from the contract.
+if(!s) {
+revert ("Failed to swap");
+}
+}
+​,Root cause: 
+Incorrect logiclendingMiscalculation,20230217,Platypusdefi,https://web3sec.notion.site/Flawed-emergencyWithdraw-function-74fc1a377a6e49b1b9ef4236c6e09594?pvs=25,$8.5M,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Platypus_exp.sol,SolidityCopyfunction emergencyWithdraw(uint256 _pid) public nonReentrant {
+        PoolInfo storage pool = poolInfo[_pid];
+        UserInfo storage user = userInfo[_pid][msg.sender];
+if (address(platypusTreasure) != address(0x00)) {
+(bool isSolvent, ) = platypusTreasure.isSolvent(msg.sender, address(poolInfo[_pid].lpToken), true); //Vulnerable Point: No Check for Adjustment for borrowed funds
+require(isSolvent, 'remaining amount exceeds collateral factor');
+}
+// reset rewarder before we update lpSupply and sumOfFactors
+        IBoostedMultiRewarder rewarder = pool.rewarder;
+if (address(rewarder) != address(0)) {
+            rewarder.onPtpReward(msg.sender, user.amount, 0, user.factor, 0);
+}
+// SafeERC20 is not needed as Asset will revert if transfer fails
+        pool.lpToken.transfer(address(msg.sender), user.amount);
+// update non-dialuting factor
+        pool.sumOfFactors -= user.factor;
+
+        user.amount = 0;
+        user.factor = 0;
+        user.rewardDebt = 0;
+emit EmergencyWithdraw(msg.sender, _pid, user.amount);
+}
+​,Root cause:
+MiscalculationDeflationary token,20230210,Sheep Token,https://web3sec.notion.site/Price-Manipulation-of-deflationary-tokens-via-flashloan-c139bc9bb4de44d19f48d7791baabb53?pvs=25,$3K,https://github.com/SunWeb3Sec/DeFiHackLabs/blob/main/src/test/Sheep_exp.sol,SolidityCopyfunction balanceOf(address account) public view override returns (uint256) {
+if (_isExcluded[account]) return _tOwned[account];
+return tokenFromReflection(_rOwned[account]);
+}
+​,Root cause: 
