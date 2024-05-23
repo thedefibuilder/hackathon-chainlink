@@ -1,2 +1,3 @@
 @oz/=node_modules/@openzeppelin/contracts/
+@chainlink/=node_modules/@chainlink/contracts/src/v0.8/
 forge-std/=node_modules/forge-std/
