@@ -16,6 +16,10 @@ import json
 logger.debug(find_dotenv())
 load_dotenv(find_dotenv())
 
+class DummyParser(dict):
+   def __init__(self, *arg, **kw):
+      super(DummyParser(), self).__init__(*arg, **kw)
+
 class SourceParser:
     def __init__(self, html) -> None:
         self.raw_html = html
@@ -162,6 +166,43 @@ class CyfrinParser(SourceParser):
         logger.debug("Page Parse: %s", page_parse.keys())
         return page_parse  
 
+class ConsenSysParser(SourceParser):
+    def __init__(self, html) -> None:
+        super().__init__(html)
+        self.__dict__.update(self.parse_all())
+        
+
+    def parse_all(self) -> dict:
+        p_elements = self.soup.find('h4') or self.soup.find('p')
+        page_parse = {'code': [], "preamble": []}
+        section = 'preamble'
+
+        while p_elements:
+            if not p_elements.name:
+                p_elements = p_elements.next_sibling
+                continue
+
+            logger.debug("Parsing page element: %s", p_elements.name)
+            if p_elements.name == 'h4':
+                section = p_elements.text
+                page_parse[section] = []
+            
+            if p_elements.name == 'p':
+                text = p_elements.text
+                page_parse[section].append(text)
+            
+            if p_elements.name == 'pre':
+                if section == "Recommendation:":
+                    pass
+                else:
+                    page_parse['code'].append(p_elements.text)
+
+            p_elements = p_elements.next_sibling    
+
+        logger.debug("Page Parse: %s", page_parse.keys())
+        return page_parse 
+
+
 def login(browser: webdriver.Chrome):
     logger.info("Logging in...")
     browser.find_element(By.CLASS_NAME, 'abtn-hover').click()
@@ -207,7 +248,7 @@ def search_by_source(browser: webdriver.Chrome, source: str):
     search_button.click()
     sleep(5)
     
-def get_vulnerability_links(browser: webdriver.Chrome):
+def get_vulnerability_links(browser: webdriver.Chrome, backoff=1):
     pages = int(browser.find_element(
         By.CLASS_NAME, 'pagination'
     ).find_elements(By.TAG_NAME, 'li')[-2].text)
@@ -236,7 +277,7 @@ def get_vulnerability_links(browser: webdriver.Chrome):
                 logger.error("No link found for vulnerability")
         logger.debug("Page %s of %s", page, pages)
         next.click()
-        sleep(1)
+        sleep(backoff)
     return links
 
 def read_vulnerability(
@@ -274,13 +315,14 @@ if __name__ == '__main__':
     parsers = {
         "Sherlock": SherlockParser,
         "Cyfrin": CyfrinParser,
+        "ConsenSys": ConsenSysParser,
     }
 
     url = 'https://solodit.xyz/'
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless=new')
+    #options.add_argument('--headless=new')
     browser = webdriver.Chrome(options=options)
-    SOURCE = "Cyfrin"
+    SOURCE = "ConsenSys"
     browser.get(url)
     login(browser)
 
@@ -288,7 +330,7 @@ if __name__ == '__main__':
     if not os.path.exists(f'{SOURCE}_vulnerability_links.txt'):
         search_by_source(browser, SOURCE)
         sleep(5)
-        vulnerability_links = get_vulnerability_links(browser)
+        vulnerability_links = get_vulnerability_links(browser, backoff=2)
         with open(f'{SOURCE}_vulnerability_links.txt', 'w') as f:
             f.write('\n'.join(vulnerability_links))
     
@@ -301,7 +343,7 @@ if __name__ == '__main__':
             vulnerability = read_vulnerability(link, browser, parsers[SOURCE])
         except Exception as e:
             logger.error("Error reading vulnerability: %s", e)
-            vulnerability = {"error": f'Error reading vulnerability {e}'}
+            vulnerability = DummyParser({"error": f'Error reading vulnerability {e}'})
         with open(f'{SOURCE}_vulnerabilities_formatted.txt', 'a', encoding='utf-8') as f:
             f.write('\n')
             f.write(link)
@@ -317,9 +359,9 @@ if __name__ == '__main__':
 
         
     # vuln = read_vulnerability(
-    #    'https://solodit.xyz/issues/some-functions-of-goldilend-will-revert-forever-cyfrin-none-cyfrin-goldilocks-v11-markdown', 
+    #    'https://solodit.xyz/issues/node-operators-can-stake-validators-that-were-not-proposed-by-them-consensys-none-geode-liquid-staking-markdown', 
     #     browser, 
-    #     CyfrinParser
+    #     ConsenSysParser
     # )
     # print(json.dumps({key:vuln.__dict__[key] for key in vuln.__dict__ if key not in ['raw_html', 'soup', 'text']}, indent=4))  
     
