@@ -202,6 +202,49 @@ class ConsenSysParser(SourceParser):
         logger.debug("Page Parse: %s", page_parse.keys())
         return page_parse 
 
+class PashovParser(SourceParser):
+    def __init__(self, html) -> None:
+        super().__init__(html)
+        self.__dict__.update(self.parse_all())
+        
+
+    def parse_all(self) -> dict:
+        p_elements = self.soup.find('p')
+        page_parse = {'code': []}
+        prev_section = 'preamble'
+
+        while p_elements:
+            if not p_elements.name:
+                p_elements = p_elements.next_sibling
+                continue
+
+            logger.debug("Parsing page element: %s", p_elements.name)
+            section = p_elements.find('strong')
+            rem_section = False
+            if section:
+                section = section.text
+                page_parse[section.rstrip(":")] = []
+                prev_section = section
+                rem_section = True
+            else:
+                section = prev_section
+            
+            if p_elements.name == 'p':
+                text = p_elements.text
+                if rem_section:
+                    text = text.replace(section, '')
+                page_parse[section.rstrip(":")].append(text)
+            
+            if p_elements.name == 'pre':
+                if section == "Recommendations:":
+                    pass
+                else:
+                    page_parse['code'].append(p_elements.text)
+
+            p_elements = p_elements.next_sibling    
+
+        logger.debug("Page Parse: %s", page_parse.keys())
+        return page_parse
 
 def login(browser: webdriver.Chrome):
     logger.info("Logging in...")
@@ -316,25 +359,28 @@ if __name__ == '__main__':
         "Sherlock": SherlockParser,
         "Cyfrin": CyfrinParser,
         "ConsenSys": ConsenSysParser,
+        "Pashov Audit Group": PashovParser,
+        "Trust Security": CyfrinParser,
     }
 
     url = 'https://solodit.xyz/'
     options = webdriver.ChromeOptions()
-    #options.add_argument('--headless=new')
+    options.add_argument('--headless=new')
     browser = webdriver.Chrome(options=options)
-    SOURCE = "ConsenSys"
+    SOURCE = "Trust Security"
     browser.get(url)
     login(browser)
+    
 
-
-    if not os.path.exists(f'{SOURCE}_vulnerability_links.txt'):
+    FILESOURCE = SOURCE.replace(' ', '_')
+    if not os.path.exists(f'{FILESOURCE}_vulnerability_links.txt'):
         search_by_source(browser, SOURCE)
         sleep(5)
         vulnerability_links = get_vulnerability_links(browser, backoff=2)
-        with open(f'{SOURCE}_vulnerability_links.txt', 'w') as f:
+        with open(f'{FILESOURCE}_vulnerability_links.txt', 'w') as f:
             f.write('\n'.join(vulnerability_links))
     
-    with open(f'{SOURCE}_vulnerability_links.txt', 'r') as f:
+    with open(f'{FILESOURCE}_vulnerability_links.txt', 'r') as f:
         vulnerability_links = f.readlines()
     
     logger.info("Found %s vulnerabilities in %s", len(vulnerability_links), SOURCE)
@@ -344,7 +390,7 @@ if __name__ == '__main__':
         except Exception as e:
             logger.error("Error reading vulnerability: %s", e)
             vulnerability = DummyParser({"error": f'Error reading vulnerability {e}'})
-        with open(f'{SOURCE}_vulnerabilities_formatted.txt', 'a', encoding='utf-8') as f:
+        with open(f'{FILESOURCE}_vulnerabilities_formatted.txt', 'a', encoding='utf-8') as f:
             f.write('\n')
             f.write(link)
             f.write('-'*50)
@@ -359,9 +405,9 @@ if __name__ == '__main__':
 
         
     # vuln = read_vulnerability(
-    #    'https://solodit.xyz/issues/node-operators-can-stake-validators-that-were-not-proposed-by-them-consensys-none-geode-liquid-staking-markdown', 
+    #    'https://solodit.xyz/issues/trst-m-1-removing-a-trade-path-in-router-will-cause-serious-data-corruption-trust-security-none-orbital-finance-markdown_', 
     #     browser, 
-    #     ConsenSysParser
+    #     CyfrinParser
     # )
     # print(json.dumps({key:vuln.__dict__[key] for key in vuln.__dict__ if key not in ['raw_html', 'soup', 'text']}, indent=4))  
     
