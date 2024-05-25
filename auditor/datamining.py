@@ -118,6 +118,50 @@ class SherlockParser(SourceParser):
         text = details_soup.find('p').text
         return code, text
 
+class CyfrinParser(SourceParser):
+    def __init__(self, html) -> None:
+        super().__init__(html)
+        self.__dict__.update(self.parse_all())
+        
+
+    def parse_all(self) -> dict:
+        p_elements = self.soup.find('p')
+        page_parse = {'code': []}
+        prev_section = 'preamble'
+
+        while p_elements:
+            if not p_elements.name:
+                p_elements = p_elements.next_sibling
+                continue
+
+            logger.debug("Parsing page element: %s", p_elements.name)
+            section = p_elements.find('strong')
+            rem_section = False
+            if section:
+                section = section.text
+                page_parse[section.rstrip(":")] = []
+                prev_section = section
+                rem_section = True
+            else:
+                section = prev_section
+            
+            if p_elements.name == 'p':
+                text = p_elements.text
+                if rem_section:
+                    text = text.replace(section, '')
+                page_parse[section.rstrip(":")].append(text)
+            
+            if p_elements.name == 'pre':
+                if section == "Recommended Mitigation:":
+                    pass
+                else:
+                    page_parse['code'].append(p_elements.text)
+
+            p_elements = p_elements.next_sibling    
+
+        logger.debug("Page Parse: %s", page_parse.keys())
+        return page_parse  
+
 def login(browser: webdriver.Chrome):
     logger.info("Logging in...")
     browser.find_element(By.CLASS_NAME, 'abtn-hover').click()
@@ -227,55 +271,57 @@ def main():
     sleep(20)
 
 if __name__ == '__main__':
+    parsers = {
+        "Sherlock": SherlockParser,
+        "Cyfrin": CyfrinParser,
+    }
+
     url = 'https://solodit.xyz/'
     options = webdriver.ChromeOptions()
     options.add_argument('--headless=new')
     browser = webdriver.Chrome(options=options)
-    SOURCE = "Sherlock"
+    SOURCE = "Cyfrin"
     browser.get(url)
     login(browser)
 
 
-    # if not os.path.exists(f'{SOURCE}_vulnerability_links.txt'):
-    #     search_by_source(browser, SOURCE)
-    #     sleep(5)
-    #     vulnerability_links = get_vulnerability_links(browser)
-    #     with open(f'{SOURCE}_vulnerability_links.txt', 'w') as f:
-    #         f.write('\n'.join(vulnerability_links))
+    if not os.path.exists(f'{SOURCE}_vulnerability_links.txt'):
+        search_by_source(browser, SOURCE)
+        sleep(5)
+        vulnerability_links = get_vulnerability_links(browser)
+        with open(f'{SOURCE}_vulnerability_links.txt', 'w') as f:
+            f.write('\n'.join(vulnerability_links))
     
-    # with open(f'{SOURCE}_vulnerability_links.txt', 'r') as f:
-    #     vulnerability_links = f.readlines()
+    with open(f'{SOURCE}_vulnerability_links.txt', 'r') as f:
+        vulnerability_links = f.readlines()
     
-    # logger.info("Found %s vulnerabilities in %s", len(vulnerability_links), SOURCE)
-    # for link in vulnerability_links:
-    #     try:
-    #         vulnerability = read_vulnerability(link, browser, SherlockParser)
-    #     except Exception as e:
-    #         logger.error("Error reading vulnerability: %s", e)
-    #         vulnerability = {"error": f'Error read
-    #                          ing vulnerability {e}'}
-    #     with open(f'{SOURCE}_vulnerabilities_formatted.txt', 'a', encoding='utf-8') as f:
-    #         f.write('\n')
-    #         f.write(link)
-    #         f.write('-'*50)
-    #         f.write('\n')
-    #         f.write('----Start JSON----\n')
-    #         f.write(json.dumps(
-    #             {key:vulnerability.__dict__[key] for key in vulnerability.__dict__ if key not in ['raw_html', 'soup', 'text']}, 
-    #             indent=4
-    #         ))
-    #         f.write('\n----End JSON----')
-    #         f.write('\n')
+    logger.info("Found %s vulnerabilities in %s", len(vulnerability_links), SOURCE)
+    for link in vulnerability_links:
+        try:
+            vulnerability = read_vulnerability(link, browser, parsers[SOURCE])
+        except Exception as e:
+            logger.error("Error reading vulnerability: %s", e)
+            vulnerability = {"error": f'Error reading vulnerability {e}'}
+        with open(f'{SOURCE}_vulnerabilities_formatted.txt', 'a', encoding='utf-8') as f:
+            f.write('\n')
+            f.write(link)
+            f.write('-'*50)
+            f.write('\n')
+            f.write('----Start JSON----\n')
+            f.write(json.dumps(
+                {key:vulnerability.__dict__[key] for key in vulnerability.__dict__ if key not in ['raw_html', 'soup', 'text']}, 
+                indent=4
+            ))
+            f.write('\n----End JSON----')
+            f.write('\n')
 
         
-    vuln = read_vulnerability(
-       'https://solodit.xyz/issues/some-functions-of-goldilend-will-revert-forever-cyfrin-none-cyfrin-goldilocks-v11-markdown', 
-        browser, 
-        CyfrinParser
-    )
-    print(json.dumps({key:vuln.__dict__[key] for key in vuln.__dict__ if key not in ['raw_html', 'soup', 'text']}, indent=4))
-    pprint(vuln.code)
-    pprint(vuln.vulnerability_detail)    
+    # vuln = read_vulnerability(
+    #    'https://solodit.xyz/issues/some-functions-of-goldilend-will-revert-forever-cyfrin-none-cyfrin-goldilocks-v11-markdown', 
+    #     browser, 
+    #     CyfrinParser
+    # )
+    # print(json.dumps({key:vuln.__dict__[key] for key in vuln.__dict__ if key not in ['raw_html', 'soup', 'text']}, indent=4))  
     
     
     browser.quit()
