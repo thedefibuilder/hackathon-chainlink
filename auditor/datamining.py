@@ -12,6 +12,7 @@ from dotenv import load_dotenv, find_dotenv
 from utils import logger
 import utils
 import json
+from pathlib import Path
 
 logger.debug(find_dotenv())
 load_dotenv(find_dotenv())
@@ -368,19 +369,22 @@ if __name__ == '__main__':
     options.add_argument('--headless=new')
     browser = webdriver.Chrome(options=options)
     SOURCE = "Trust Security"
+    FILESOURCE = SOURCE.replace(' ', '_')
+    linkfile = Path(utils.DATADIR, f'{FILESOURCE}_vulnerability_links.txt')
+    datafile = Path(utils.DATADIR, f'{FILESOURCE}_vulnerabilities_formatted.txt')
+    
     browser.get(url)
     login(browser)
-    
 
-    FILESOURCE = SOURCE.replace(' ', '_')
-    if not os.path.exists(f'{FILESOURCE}_vulnerability_links.txt'):
+
+    if not os.path.exists(linkfile):
         search_by_source(browser, SOURCE)
         sleep(5)
         vulnerability_links = get_vulnerability_links(browser, backoff=2)
-        with open(f'{FILESOURCE}_vulnerability_links.txt', 'w') as f:
+        with open(linkfile, 'w') as f:
             f.write('\n'.join(vulnerability_links))
     
-    with open(f'{FILESOURCE}_vulnerability_links.txt', 'r') as f:
+    with open(linkfile, 'r') as f:
         vulnerability_links = f.readlines()
     
     logger.info("Found %s vulnerabilities in %s", len(vulnerability_links), SOURCE)
@@ -390,14 +394,15 @@ if __name__ == '__main__':
         except Exception as e:
             logger.error("Error reading vulnerability: %s", e)
             vulnerability = DummyParser({"error": f'Error reading vulnerability {e}'})
-        with open(f'{FILESOURCE}_vulnerabilities_formatted.txt', 'a', encoding='utf-8') as f:
+        with open(datafile, 'a', encoding='utf-8') as f:
             f.write('\n')
             f.write(link)
             f.write('-'*50)
             f.write('\n')
             f.write('----Start JSON----\n')
             f.write(json.dumps(
-                {key:vulnerability.__dict__[key] for key in vulnerability.__dict__ if key not in ['raw_html', 'soup', 'text']}, 
+                {key:vulnerability.__dict__[key] for key in vulnerability.__dict__ 
+                 if key not in ['raw_html', 'soup', 'text']}, 
                 indent=4
             ))
             f.write('\n----End JSON----')
