@@ -87,3 +87,6 @@ cython_debug/
 
 # Ignore VSCode settings
 .vscode/
+
+*.log
+share

@@ -1,6 +1,9 @@
 import logging
 import requests
+from pathlib import Path
 
+DATADIR = 'data'
+LINKSDIR = Path(DATADIR) / 'links'
 
 class NotValidSnippetError(Exception):
     pass
