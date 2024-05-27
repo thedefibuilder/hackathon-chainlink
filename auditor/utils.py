@@ -1,12 +1,26 @@
 import logging
 import requests
 from pathlib import Path
+from pymongo import MongoClient
 
 DATADIR = 'data'
 LINKSDIR = Path(DATADIR) / 'links'
+ATLAS_DB_URI = ''.join(["mongodb+srv://",
+                f"{os.environ.get('ATLAS_DB_USERNAME')}:",
+                f"{os.environ.get('ATLAS_DB_PASSWORD')}",
+                "@ai-auditor-dev.2mfs29p.mongodb.net/?retryWrites=true&w=majority",
+                "&appName=ai-auditor-dev"])
 
 class NotValidSnippetError(Exception):
     pass
+
+def ping_mongodb():
+    client = MongoClient(ATLAS_DB_URI)
+    try:
+        client.admin.command('ping')
+        print("Pinged your deployment. You successfully connected to MongoDB!")
+    except Exception as e:
+        print(e)
 
 def setup_logger():
     # Create a logger
@@ -71,6 +85,40 @@ def get_github_code_snippet(link:str):
     else:
         logger.error("Error getting code snippet from %s", link)
         return None
+    
+def split_code_by_function(code):
+    snippets = []
+    parentheses = []
+    opened = False
+    curr_function = ''
+
+    opposite = {
+        '}': '{',
+        ']': '[',
+        ')': '('
+    }
+    for char in code:
+        if char in '{([':
+            if char == '{':
+                
+                opened = True
+            parentheses.append(char)
+        elif char in '}])':
+            if parentheses:
+                if opposite[char] == parentheses[-1]:  
+                    parentheses.pop()
+        
+        curr_function += char
+
+        if opened:
+            if not parentheses:
+                opened = False
+                snippets.append(curr_function)
+                curr_function = ''
+    
+    snippets.append(curr_function)
+
+    return snippets
 
 if __name__ == '__main__':
     link = 'https://gist.github.com/Trumpero/adbcd84c33f71856dbf379f581e8abbb'
