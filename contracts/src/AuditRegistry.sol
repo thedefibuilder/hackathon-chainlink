@@ -32,10 +32,12 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
         "url: `https://swapi.info/api/people/${characterId}/`" "});" "if (apiResponse.error) {"
         "throw Error('Request failed');" "}" "const { data } = apiResponse;" "return Functions.encodeString(data.name);";
     uint32 private constant gasLimit = 300_000;
-    bytes32 private constant fujiDonId = 0x66756e2d6176616c616e6368652d66756a692d31000000000000000000000000;
+    // Hardcoded for Avalanche Fuji C-Chain
+    bytes32 private constant donId = 0x66756e2d6176616c616e6368652d66756a692d31000000000000000000000000;
+    address private constant functionsRouter = 0xA9d587a00A31A52Ed70D6026794a8FC5E2F5dCb0;
     uint64 private constant subscriptionId = 8706;
 
-    constructor(address functionsRouter) ERC721("AI Auditor", "AUDIT") FunctionsClient(functionsRouter) {
+    constructor() ERC721("AI Auditor", "AUDIT") FunctionsClient(functionsRouter) {
         // solhint-disable-previous-line no-empty-blocks
     }
 
@@ -81,7 +83,7 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
         string[] memory args = new string[](1);
         args[0] = contractURI;
         req.setArgs(args);
-        requestId = _sendRequest(req.encodeCBOR(), subscriptionId, gasLimit, fujiDonId);
+        requestId = _sendRequest(req.encodeCBOR(), subscriptionId, gasLimit, donId);
     }
 
     /**
