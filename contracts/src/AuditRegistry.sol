@@ -68,8 +68,7 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
 
         emit AuditorRequestSuccess(requestId, response);
 
-        string memory auditURI = abi.decode(response, (string));
-        _setTokenURI(data.tokenId, auditURI);
+        _setTokenURI(data.tokenId, string(response));
 
         // If this is not an audit update request, mint the token
         if (data.owner != address(0)) {
