@@ -2,14 +2,17 @@ import logging
 import requests
 from pathlib import Path
 from pymongo import MongoClient
+import os
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
 
 DATADIR = 'data'
 LINKSDIR = Path(DATADIR) / 'links'
 ATLAS_DB_URI = ''.join(["mongodb+srv://",
                 f"{os.environ.get('ATLAS_DB_USERNAME')}:",
                 f"{os.environ.get('ATLAS_DB_PASSWORD')}",
-                "@ai-auditor-dev.2mfs29p.mongodb.net/?retryWrites=true&w=majority",
-                "&appName=ai-auditor-dev"])
+                "@ai-auditor-prod.cwtxo73.mongodb.net/?retryWrites=true&w=majority",
+                "&appName=ai-auditor-prod"])
 
 class NotValidSnippetError(Exception):
     pass
@@ -124,4 +127,4 @@ if __name__ == '__main__':
     link = 'https://gist.github.com/Trumpero/adbcd84c33f71856dbf379f581e8abbb'
 
     code = get_github_code_snippet(link)
-    print(code)
+    print(ATLAS_DB_URI)
