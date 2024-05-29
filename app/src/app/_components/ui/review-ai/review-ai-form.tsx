@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Button from "../button";
-import { z } from "zod";
+import { type z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { ReviewAISchema } from "types/schema";
@@ -74,7 +74,7 @@ export default function ReviewAiForm() {
           placeholder="Type USDC amount"
           {...register("rewardCritical")}
           onChange={handleInputChange("rewardCritical")}
-          error={errors.rewardCritical && errors.rewardCritical.message}
+          error={errors.rewardCritical?.message}
           className="w-full"
           max={10000}
         />
@@ -90,7 +90,7 @@ export default function ReviewAiForm() {
           placeholder="Type USDC amount"
           {...register("rewardHigh")}
           onChange={handleInputChange("rewardHigh")}
-          error={errors.rewardHigh && errors.rewardHigh.message}
+          error={errors.rewardHigh?.message}
           className="w-full"
           max={10000}
         />
@@ -106,7 +106,7 @@ export default function ReviewAiForm() {
           placeholder="Type USDC amount"
           {...register("rewardMedium")}
           onChange={handleInputChange("rewardMedium")}
-          error={errors.rewardMedium && errors.rewardMedium.message}
+          error={errors.rewardMedium?.message}
           className="w-full"
           max={10000}
         />
@@ -121,7 +121,7 @@ export default function ReviewAiForm() {
           placeholder="Type USDC amount"
           {...register("rewardLow")}
           onChange={handleInputChange("rewardLow")}
-          error={errors.rewardLow && errors.rewardLow.message}
+          error={errors.rewardLow?.message}
           className="w-full"
           max={10000}
         />

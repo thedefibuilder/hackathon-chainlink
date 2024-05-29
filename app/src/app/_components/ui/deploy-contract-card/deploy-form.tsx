@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Button from "../button";
-import { z } from "zod";
+import { type z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { DeployContractSchema } from "types/schema";
@@ -43,7 +43,7 @@ export default function DeployContractForm({
           placeholder="Give your code a Title"
           label="Customize and deploy your contract"
           {...register("title")}
-          error={errors.title && errors.title.message}
+          error={errors.title?.message}
           className="w-full"
         />
         <Input
@@ -51,7 +51,7 @@ export default function DeployContractForm({
           placeholder="address"
           label="nativeTokenWrapper"
           {...register("nativeToken")}
-          error={errors.nativeToken && errors.nativeToken.message}
+          error={errors.nativeToken?.message}
           className="w-full"
         />
         <Input
@@ -59,7 +59,7 @@ export default function DeployContractForm({
           placeholder="address"
           label="trustedForwarder"
           {...register("trustedForwarder")}
-          error={errors.trustedForwarder && errors.trustedForwarder.message}
+          error={errors.trustedForwarder?.message}
           className="w-full"
         />
         <Input
@@ -67,7 +67,7 @@ export default function DeployContractForm({
           placeholder="address"
           label="linkTokenAddress"
           {...register("tokenAddress")}
-          error={errors.tokenAddress && errors.tokenAddress.message}
+          error={errors.tokenAddress?.message}
           className="w-full"
         />
         <Input
@@ -75,7 +75,7 @@ export default function DeployContractForm({
           placeholder="address"
           label="vrfV2Wrapper"
           {...register("vrf")}
-          error={errors.vrf && errors.vrf.message}
+          error={errors.vrf?.message}
           className="w-full"
         />
       </div>
@@ -84,7 +84,7 @@ export default function DeployContractForm({
       <div className="flex w-full items-center justify-between">
         <div className="flex items-center gap-2">
           <Image
-            src={selectedCoinData?.imageSrc || ""}
+            src={selectedCoinData?.imageSrc ?? ""}
             alt="Coin Logo"
             width={40}
             height={40}

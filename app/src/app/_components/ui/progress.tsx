@@ -30,7 +30,7 @@ const Progress = React.forwardRef<
             ? "bg-progress-gradient-low"
             : "bg-progress-gradient",
         ])}
-        style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+        style={{ transform: `translateX(-${100 - (value ?? 0)}%)` }}
       ></ProgressPrimitive.Indicator>
     </ProgressPrimitive.Root>
     {showValue && (

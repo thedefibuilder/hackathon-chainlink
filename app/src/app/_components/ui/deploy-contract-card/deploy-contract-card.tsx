@@ -3,7 +3,7 @@ import { useState } from "react";
 import { coins } from "content";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
-import { DeployContractSchema } from "types/schema";
+import { type DeployContractSchema } from "types/schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
 import {
   Dialog,
@@ -13,11 +13,11 @@ import {
   DialogTitle,
 } from "../dialog";
 import DeployContractForm from "./deploy-form";
-import { z } from "zod";
+import { type z } from "zod";
 import { cn } from "lib/utils";
 
 export default function DeployContracCard() {
-  const [selectedCoin, setSelectedCoin] = useState(coins?.[0]?.value || "");
+  const [selectedCoin, setSelectedCoin] = useState(coins?.[0]?.value ?? "");
   const { setValue } = useForm<z.infer<typeof DeployContractSchema>>({});
 
   return (
