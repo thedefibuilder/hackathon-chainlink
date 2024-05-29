@@ -3,6 +3,8 @@
 import Cips from "@/app/_components/ui/cips";
 import Contributors from "@/app/_components/ui/contributors/contributors";
 import DeploySmartContractCard from "@/app/_components/ui/deploy-card/deploy-smart-contract-card";
+import DeployContracCard from "@/app/_components/ui/deploy-contract-card/deploy-contract-card";
+
 import SectionTitle from "@/app/_components/ui/section-title";
 import SuggestedAccordion from "@/app/_components/ui/suggested-changes/suggested-accordion";
 import TotalAward from "@/app/_components/ui/total-award";
@@ -55,6 +57,8 @@ export default function DeployContractPage({
         </div>
         <div className="w-[32%]">
           <div className="h-24" />
+          <DeployContracCard />
+          <div className="h-8" />
           <TotalAward />
           <div className="h-8" />
           <Contributors />

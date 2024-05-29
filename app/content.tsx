@@ -145,7 +145,7 @@ export const reviewContent: ReviewContent[] = [
     cips: ["Swap", "Critical", "Dexes"],
   },
 ];
-export const cipsContet = [
+export const cipsContent = [
   {
     title: "Zwappi - Derivatives DEX",
     imageSrc: "/terminal_black.png",
@@ -155,34 +155,6 @@ export const cipsContet = [
     title: "Phoenix Shadow",
     imageSrc: "/clinical_notes_black.png",
     imageAlt: "Clinical Notes Black Icon",
-  },
-];
-
-export const vulnerabilitiesCard = [
-  {
-    title: "Reentrancy Vulnerability:",
-    text: "The withdraw function allows users to withdraw funds from the contract. However, it's susceptible to reentrancy attacks. After transferring funds to the user, the contract ",
-    score: "Critical",
-  },
-  {
-    title: "State Changes After Transfer:",
-    text: "The withdraw function modifies the contract's state after transferring funds to the user. This is risky because if the state changes fail (for example,",
-    score: "Medium",
-  },
-  {
-    title: "No Access Control:",
-    text: "There's no access control mechanism in place, meaning anyone can deposit or withdraw funds from the contract. This could lead to unauthorized access",
-    score: "High",
-  },
-  {
-    title: "Lack of Modifiers:",
-    text: "Modifiers could be used to add access control and validation checks in a more modular and readable way. Without modifiers, ",
-    score: "Medium",
-  },
-  {
-    title: "No Events:",
-    text: "Events are essential for monitoring and tracing contract activity. Without events, it becomes difficult to track transactions and debug issues.",
-    score: "Low",
   },
 ];
 export const suggestedChanges = [
@@ -241,6 +213,39 @@ export const suggestedChanges = [
     ),
   },
 ];
+export const vulnerabilitiesCard = [
+  {
+    title: "Reentrancy Vulnerability:",
+    text: "The withdraw function allows users to withdraw funds from the contract. However, it's susceptible to reentrancy attacks. After transferring funds to the user, the contract ",
+    certainityScore: "Critical",
+    suggestedChanges: suggestedChanges,
+  },
+  {
+    title: "State Changes After Transfer:",
+    text: "The withdraw function modifies the contract's state after transferring funds to the user. This is risky because if the state changes fail (for example,",
+    certainityScore: "Medium",
+    suggestedChanges: suggestedChanges,
+  },
+  {
+    title: "No Access Control:",
+    text: "There's no access control mechanism in place, meaning anyone can deposit or withdraw funds from the contract. This could lead to unauthorized access",
+    certainityScore: "High",
+    suggestedChanges: suggestedChanges,
+  },
+  {
+    title: "Lack of Modifiers:",
+    text: "Modifiers could be used to add access control and validation checks in a more modular and readable way. Without modifiers, ",
+    certainityScore: "Medium",
+    suggestedChanges: suggestedChanges,
+  },
+  {
+    title: "No Events:",
+    text: "Events are essential for monitoring and tracing contract activity. Without events, it becomes difficult to track transactions and debug issues.",
+    certainityScore: "Low",
+    suggestedChanges: suggestedChanges,
+  },
+];
+
 export const reportTag = [
   "0x",
   "1/64 Rule",
@@ -491,5 +496,27 @@ export const deployCardContent = [
         value: "Inspect Audit",
       },
     ],
+  },
+];
+export const coins = [
+  {
+    imageSrc: "/arbitrum_one.svg",
+    value: "Arbitrum One",
+  },
+  {
+    imageSrc: "/base.svg",
+    value: "Base",
+  },
+  {
+    imageSrc: "/celo.svg",
+    value: "Celo",
+  },
+  {
+    imageSrc: "/ethereum.svg",
+    value: "Ethereum",
+  },
+  {
+    imageSrc: "/linea.svg",
+    value: "Linea",
   },
 ];

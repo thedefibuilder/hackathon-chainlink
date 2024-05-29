@@ -46,6 +46,7 @@ const config: Config = {
       },
       backgroundImage: {
         "custom-gradient": "linear-gradient(to bottom, #0f001b, #1c0330)",
+        "deploy-card-gradient": "linear-gradient(to bottom, #0f001b, #1c0330)",
         "red-gradient": "linear-gradient(to right, #671213, #13011a)",
         "yellow-gradient": "linear-gradient(to right, #4c4d0b, #0f001b)",
         "orange-gradient": "linear-gradient(to right, #441b0b, #0f001b)",

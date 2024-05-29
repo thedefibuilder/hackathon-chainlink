@@ -1,4 +1,4 @@
-import { cipsContet, vulnerabilitiesCard } from "content";
+import { cipsContent, vulnerabilitiesCard } from "content";
 import Image from "next/image";
 import Cips from "../cips";
 import VulnerabilitiesCard from "../vulnerabilities-card";
@@ -13,7 +13,7 @@ export default function SmartContractVulnerabilities() {
           </h2>
           <div className="h-2" />
           <div className="flex gap-3">
-            {cipsContet.map((item, index) => {
+            {cipsContent.map((item, index) => {
               return (
                 <Cips
                   className="inline-flex items-center gap-1 rounded-full bg-textLight px-2 py-1"
@@ -59,7 +59,7 @@ export default function SmartContractVulnerabilities() {
               id={index + 1}
               title={item.title}
               text={item.text}
-              score={item.score}
+              score={item.certainityScore}
               key={index}
             />
           );

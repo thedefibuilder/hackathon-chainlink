@@ -59,7 +59,7 @@ export default function TabsReview() {
                         id={index + 1}
                         title={item.title}
                         text={item.text}
-                        score={item.score}
+                        score={item.certainityScore}
                         className={cn([
                           "mb-4 ",
                           index === vulnerabilitiesCard.length - 1
