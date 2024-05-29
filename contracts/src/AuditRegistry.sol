@@ -49,13 +49,13 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
         requests[requestId] = RequestData(address(0), tokenId, contractURI);
     }
 
-    function requestNewAudit(uint256 tokenId, string calldata newContractURI) external returns (bytes32 requestId) {
+    function requestNewAudit(uint256 tokenId, string calldata contractURI) external returns (bytes32 requestId) {
         if (tokenId == 0) revert InvalidTokenId();
         if (_ownerOf(tokenId) != address(0)) revert AlreadyExists();
 
-        requestId = _sendAuditRequest(newContractURI);
+        requestId = _sendAuditRequest(contractURI);
 
-        requests[requestId] = RequestData(msg.sender, tokenId, newContractURI);
+        requests[requestId] = RequestData(msg.sender, tokenId, contractURI);
     }
 
     function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
