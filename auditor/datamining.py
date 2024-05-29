@@ -1,5 +1,5 @@
 from pprint import pprint
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -19,7 +19,7 @@ load_dotenv(find_dotenv())
 
 class DummyParser(dict):
    def __init__(self, *arg, **kw):
-      super(DummyParser(), self).__init__(*arg, **kw)
+      super().__init__(*arg, **kw)
 
 class SourceParser:
     def __init__(self, html) -> None:
@@ -140,7 +140,13 @@ class CyfrinParser(SourceParser):
                 continue
 
             logger.debug("Parsing page element: %s", p_elements.name)
-            section = p_elements.find('strong')
+            section = None
+            try:
+                if isinstance(list(p_elements.children)[0], Tag):
+                    if list(p_elements.children)[0].name == "strong":
+                        section = p_elements.find('strong')
+            except IndexError:
+                pass
             rem_section = False
             if section:
                 section = section.text
@@ -220,7 +226,13 @@ class PashovParser(SourceParser):
                 continue
 
             logger.debug("Parsing page element: %s", p_elements.name)
-            section = p_elements.find('strong')
+            section = None
+            try:
+                if isinstance(list(p_elements.children)[0], Tag):
+                    if list(p_elements.children)[0].name == "strong":
+                        section = p_elements.find('strong')
+            except IndexError:
+                pass
             rem_section = False
             if section:
                 section = section.text
@@ -370,51 +382,51 @@ if __name__ == '__main__':
     browser = webdriver.Chrome(options=options)
     SOURCE = "Trust Security"
     FILESOURCE = SOURCE.replace(' ', '_')
-    linkfile = Path(utils.DATADIR, f'{FILESOURCE}_vulnerability_links.txt')
-    datafile = Path(utils.DATADIR, f'{FILESOURCE}_vulnerabilities_formatted.txt')
+    linkfile = Path(utils.DATADIR, 'links', f'{FILESOURCE}_vulnerability_links.txt')
+    datafile = Path(utils.DATADIR, f'{FILESOURCE}_vulnerabilities_formatted2.txt')
     
     browser.get(url)
     login(browser)
 
 
-    if not os.path.exists(linkfile):
-        search_by_source(browser, SOURCE)
-        sleep(5)
-        vulnerability_links = get_vulnerability_links(browser, backoff=2)
-        with open(linkfile, 'w') as f:
-            f.write('\n'.join(vulnerability_links))
+    # if not os.path.exists(linkfile):
+    #     search_by_source(browser, SOURCE)
+    #     sleep(5)
+    #     vulnerability_links = get_vulnerability_links(browser, backoff=2)
+    #     with open(linkfile, 'w') as f:
+    #         f.write('\n'.join(vulnerability_links))
     
-    with open(linkfile, 'r') as f:
-        vulnerability_links = f.readlines()
+    # with open(linkfile, 'r') as f:
+    #     vulnerability_links = f.readlines()
     
-    logger.info("Found %s vulnerabilities in %s", len(vulnerability_links), SOURCE)
-    for link in vulnerability_links:
-        try:
-            vulnerability = read_vulnerability(link, browser, parsers[SOURCE])
-        except Exception as e:
-            logger.error("Error reading vulnerability: %s", e)
-            vulnerability = DummyParser({"error": f'Error reading vulnerability {e}'})
-        with open(datafile, 'a', encoding='utf-8') as f:
-            f.write('\n')
-            f.write(link)
-            f.write('-'*50)
-            f.write('\n')
-            f.write('----Start JSON----\n')
-            f.write(json.dumps(
-                {key:vulnerability.__dict__[key] for key in vulnerability.__dict__ 
-                 if key not in ['raw_html', 'soup', 'text']}, 
-                indent=4
-            ))
-            f.write('\n----End JSON----')
-            f.write('\n')
+    # logger.info("Found %s vulnerabilities in %s", len(vulnerability_links), SOURCE)
+    # for link in vulnerability_links:
+    #     try:
+    #         vulnerability = read_vulnerability(link, browser, parsers[SOURCE])
+    #     except Exception as e:
+    #         logger.error("Error reading vulnerability: %s", e)
+    #         vulnerability = DummyParser({"error": f'Error reading vulnerability {e}'})
+    #     with open(datafile, 'a', encoding='utf-8') as f:
+    #         f.write('\n')
+    #         f.write(link)
+    #         f.write('-'*50)
+    #         f.write('\n')
+    #         f.write('----Start JSON----\n')
+    #         f.write(json.dumps(
+    #             {key:vulnerability.__dict__[key] for key in vulnerability.__dict__ 
+    #              if key not in ['raw_html', 'soup', 'text']}, 
+    #             indent=4
+    #         ))
+    #         f.write('\n----End JSON----')
+    #         f.write('\n')
 
         
-    # vuln = read_vulnerability(
-    #    'https://solodit.xyz/issues/trst-m-1-removing-a-trade-path-in-router-will-cause-serious-data-corruption-trust-security-none-orbital-finance-markdown_', 
-    #     browser, 
-    #     CyfrinParser
-    # )
-    # print(json.dumps({key:vuln.__dict__[key] for key in vuln.__dict__ if key not in ['raw_html', 'soup', 'text']}, indent=4))  
+    vuln = read_vulnerability(
+       'https://solodit.xyz/issues/h-06-fee-target-mismatch-in-deposit-mint-withdraw-redeem-and-preview-methods-pashov-none-astrolab-markdown', 
+        browser, 
+        PashovParser
+    )
+    print(json.dumps({key:vuln.__dict__[key] for key in vuln.__dict__ if key not in ['raw_html', 'soup', 'text']}, indent=4))  
     
     
     browser.quit()
