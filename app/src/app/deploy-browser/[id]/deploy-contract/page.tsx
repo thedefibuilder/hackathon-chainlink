@@ -50,7 +50,7 @@ export default function DeployContractPage({
           <DeploySmartContractCard
             userName={item?.user}
             progress={item?.progress}
-            framework={item?.frameWork || []}
+            framework={item?.frameWork ?? []}
           />
           <div className="h-[26px]" />
           <SuggestedAccordion />

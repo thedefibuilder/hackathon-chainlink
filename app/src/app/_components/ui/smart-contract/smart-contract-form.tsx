@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Button from "../button";
-import { z } from "zod";
+import { type z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { SmartContractSchema } from "types/schema";
@@ -27,7 +27,7 @@ export default function SmartContractForm() {
             type="text"
             placeholder="Give your code a Title"
             {...register("title")}
-            error={errors.title && errors.title.message}
+            error={errors.title?.message}
             className="w-full"
           />
           <div className="w-1/2">
@@ -35,7 +35,7 @@ export default function SmartContractForm() {
               type="text"
               placeholder="Give it an author name"
               {...register("authorName")}
-              error={errors.authorName && errors.authorName.message}
+              error={errors.authorName?.message}
               className="w-full "
               iconLeft={
                 <Image

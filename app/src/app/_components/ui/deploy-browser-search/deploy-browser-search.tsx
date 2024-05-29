@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { z } from "zod";
+import { type z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { SearchSchema } from "types/schema";
@@ -36,7 +36,7 @@ export default function DeployBrowserSearch() {
             type="text"
             placeholder="Search by keyword"
             {...register("search")}
-            error={errors.search && errors.search.message}
+            error={errors.search?.message}
             className="w-full"
             iconLeft={
               <Image

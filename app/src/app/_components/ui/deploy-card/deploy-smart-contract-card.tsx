@@ -72,7 +72,7 @@ export default function DeploySmartContractCard({
                 version={item.version}
                 img={
                   <Image
-                    src={item.iconImage || ""}
+                    src={item.iconImage ?? ""}
                     alt="Framework icon"
                     width={14}
                     height={14}

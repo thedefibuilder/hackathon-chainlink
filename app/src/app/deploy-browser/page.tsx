@@ -27,9 +27,12 @@ export default function DeployBrowser() {
           <div className="flex flex-col gap-6">
             {deployCardContent.map((item, index) => {
               return (
-                <Link href={`/deploy-browser/${item.id}/deploy-contract`}>
+                <Link
+                  key={`link-${index}`}
+                  href={`/deploy-browser/${item.id}/deploy-contract`}
+                >
                   <DeployCard
-                    key={index}
+                    key={`card-${index}`}
                     imageSrc={item.imageSrc}
                     imageAlt={item.imageAlt}
                     title={item.title}

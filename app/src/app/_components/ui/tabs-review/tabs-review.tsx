@@ -1,6 +1,5 @@
 import { reviewContent, vulnerabilitiesCard } from "content";
 import { cn } from "lib/utils";
-import Image from "next/image";
 import SuggestedAccordion from "../suggested-changes/suggested-accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
 import VulnerabilitiesCard from "../vulnerabilities-card";
@@ -33,8 +32,13 @@ export default function TabsReview() {
         <div className="w-3/5  rounded-[16px] border border-dark-darkLight !p-0 text-textLight">
           {reviewContent.map((item, index) => {
             return (
-              <TabsContent value={index.toString()} className="m-0 p-4 pb-0">
+              <TabsContent
+                key={`content-${index}`}
+                value={index.toString()}
+                className="m-0 p-4 pb-0"
+              >
                 <TabsCard
+                  key={`card-${index}`}
                   imageSrc={item.imageSrc}
                   imageAlt={item.imageAlt}
                   title={item.title}

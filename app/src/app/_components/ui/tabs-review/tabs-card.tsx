@@ -76,16 +76,16 @@ export default function TabsCard({
           {haveCips ? (
             <div className="flex w-full items-center gap-3 ">
               <div className="flex w-full items-center gap-2">
-                {cips &&
-                  cips.map((item, index) => (
-                    <div
-                      className={cn([
-                        "inline-flex items-start gap-2 rounded-full border border-primary-purpleMedium px-3 py-1 font-bold text-primary-purpleMedium",
-                      ])}
-                    >
-                      <p className="-mt-0.5">{item}</p>
-                    </div>
-                  ))}
+                {cips?.map((item, index) => (
+                  <div
+                    key={index}
+                    className={cn([
+                      "inline-flex items-start gap-2 rounded-full border border-primary-purpleMedium px-3 py-1 font-bold text-primary-purpleMedium",
+                    ])}
+                  >
+                    <p className="-mt-0.5">{item}</p>
+                  </div>
+                ))}
               </div>
             </div>
           ) : null}
