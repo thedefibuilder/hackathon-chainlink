@@ -15,6 +15,10 @@ import {
   trustWallet,
 } from "@rainbow-me/rainbowkit/wallets";
 import { WagmiProvider as Web3WagmiProvider } from "wagmi";
+import {
+  QueryClientProvider as Web3QueryClientProvider,
+  QueryClient,
+} from "@tanstack/react-query";
 
 import { env } from "@/env";
 import { wagmiChains } from "@/config/chains";
@@ -34,13 +38,16 @@ const wagmiConfig = getDefaultConfig({
   chains: wagmiChains,
   ssr: true,
 });
+const queryClient = new QueryClient();
 
 type TWeb3Provider = PropsWithChildren;
 
-export function WagmiProvider({ children }: TWeb3Provider) {
-  return <Web3WagmiProvider config={wagmiConfig}>{children}</Web3WagmiProvider>;
-}
-
-export function RainbowKitProvider({ children }: TWeb3Provider) {
-  return <Web3RainbowKitProvider>{children}</Web3RainbowKitProvider>;
+export default function Web3Provider({ children }: TWeb3Provider) {
+  return (
+    <Web3WagmiProvider config={wagmiConfig}>
+      <Web3QueryClientProvider client={queryClient}>
+        <Web3RainbowKitProvider>{children}</Web3RainbowKitProvider>
+      </Web3QueryClientProvider>
+    </Web3WagmiProvider>
+  );
 }

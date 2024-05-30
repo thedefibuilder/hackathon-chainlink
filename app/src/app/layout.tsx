@@ -4,7 +4,7 @@ import { TRPCReactProvider } from "@/trpc/react";
 import Header from "./_components/ui/header";
 import Footer from "./_components/ui/footer";
 import NextAuthProvider from "@/providers/next-auth";
-import { RainbowKitProvider, WagmiProvider } from "@/providers/web3";
+import Web3Provider from "@/providers/web3";
 
 export const metadata = {
   title: "DeFi Builder AI",
@@ -25,13 +25,11 @@ export default function RootLayout({
       <body className={darkerGrotesque.className}>
         <Header />
         <div className="h-16" />
-        <WagmiProvider>
-          <RainbowKitProvider>
-            <NextAuthProvider>
-              <TRPCReactProvider>{children}</TRPCReactProvider>
-            </NextAuthProvider>
-          </RainbowKitProvider>
-        </WagmiProvider>
+        <Web3Provider>
+          <NextAuthProvider>
+            <TRPCReactProvider>{children}</TRPCReactProvider>
+          </NextAuthProvider>
+        </Web3Provider>
         <Footer />
       </body>
     </html>
