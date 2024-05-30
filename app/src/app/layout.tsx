@@ -5,6 +5,7 @@ import Header from "./_components/ui/header";
 import Footer from "./_components/ui/footer";
 import NextAuthProvider from "@/providers/next-auth";
 import Web3Provider from "@/providers/web3";
+import { Toaster } from "./_components/toast/toaster";
 
 export const metadata = {
   title: "DeFi Builder AI",
@@ -31,6 +32,8 @@ export default function RootLayout({
               {children}
 
               <Footer />
+
+              <Toaster />
             </TRPCReactProvider>
           </NextAuthProvider>
         </Web3Provider>
