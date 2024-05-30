@@ -21,13 +21,13 @@ export default function DeployContracCard() {
   const { setValue } = useForm<z.infer<typeof DeployContractSchema>>({});
 
   return (
-    <div className="rounded-[24px] bg-custom-gradient px-6">
+    <div className="rounded-[24px] bg-custom-gradient">
       <div className="h-6" />
-      <Tabs defaultValue={selectedCoin} className="w-[400px]">
+      <Tabs defaultValue={selectedCoin}>
         {coins.map((item, index) => (
           <TabsContent value={item.value} key={index}>
-            <div className="flex items-center gap-2">
-              <div className="w-1/5">
+            <div className="flex items-center gap-4 pl-2">
+              <div className="w-[20%]">
                 <Image
                   src={item.imageSrc}
                   alt="Coin Logo"
@@ -36,8 +36,8 @@ export default function DeployContracCard() {
                   className="h-[92px] w-[92px]"
                 />
               </div>
-              <div className="w-3/4 text-textLight">
-                <h2 className="text-5xl font-bold">{item.value}</h2>
+              <div className="w-[80%] text-textLight">
+                <h2 className="text-4xl font-bold">{item.value}</h2>
                 <div className="h-1" />
                 <p className="text-xl">Deploy audited and reviewed code.</p>
               </div>
@@ -51,7 +51,7 @@ export default function DeployContracCard() {
         </h4>
         <div className="h-4" />
 
-        <TabsList className="!pl-0">
+        <TabsList className="!p-0">
           {coins.map((item, index) => (
             <TabsTrigger
               value={item.value}
@@ -61,6 +61,7 @@ export default function DeployContracCard() {
                 setValue("coins", item.value);
               }}
               type="button"
+              className="!p-1"
             >
               <div
                 className={cn([
@@ -83,7 +84,7 @@ export default function DeployContracCard() {
         </TabsList>
       </Tabs>
       <div className="h-6" />
-      <div className="flex w-full justify-end">
+      <div className="flex w-full justify-end pr-4">
         <Dialog>
           <DialogTrigger
             type="button"

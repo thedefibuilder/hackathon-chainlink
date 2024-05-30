@@ -63,7 +63,7 @@ export default function DeploySmartContractCard({
         <>
           <p className="text-[12px]">Framework</p>
           <div className="h-2" />
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {framework.map((item, index) => (
               <Cips
                 key={index}

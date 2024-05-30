@@ -7,7 +7,7 @@ import { homeBannerData } from "content";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-dark-darkMain px-36 text-white">
+    <main className="min-h-screen bg-dark-darkMain px-24 text-white">
       <div className="h-8" />
       <div className="rounded-b-[32px] bg-custom-gradient px-20 ">
         <div className="h-6" />
@@ -15,7 +15,7 @@ export default function Home() {
         <div className="flex w-full items-center justify-between">
           <div className="w-1/2">
             <Image
-              className="h-[162px] w-[536px]"
+              className="h-full w-full"
               src="/defi_builder.png"
               alt="Block Magic Logo Logo"
               width={536}
@@ -29,14 +29,14 @@ export default function Home() {
             </div>
             <div className="h-8" />
             <Link href="">
-              <Button className="border-gradient w-3/5 rounded-lg px-8 py-3 text-2xl">
+              <Button className="border-gradient rounded-lg px-8 py-3 text-2xl">
                 Audit Your Smart Contract
               </Button>
             </Link>
           </div>
-          <div className="justifey-end flex ">
+          <div className="w-1/2">
             <Image
-              className="h-[404px] w-[458px]"
+              className="h-full w-full"
               src="/floating_macbook.png"
               alt="Floating Macbook"
               width={458}

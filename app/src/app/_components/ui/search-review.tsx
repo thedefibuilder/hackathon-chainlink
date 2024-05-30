@@ -25,11 +25,8 @@ export default function SearchReview() {
   console.log(search);
   return (
     <>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex items-center gap-2"
-      >
-        <div className="w-[90%]">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex items-end gap-2">
+        <div className="w-full">
           <Input
             type="text"
             placeholder="Search by keyword, user name or/and protocol name"
@@ -46,34 +43,21 @@ export default function SearchReview() {
             }
           />
         </div>
-        <div className="flex items-center gap-2">
-          <div>
-            <Button className="flex items-center gap-2 rounded-lg bg-dark-darkLight px-4 py-2 text-xl font-bold text-primary-purpleMedium">
-              <Image src="/tune.svg" alt="Tune Icon" width={24} height={24} />
-              Filters
-            </Button>
-          </div>
-          <div>
-            <Button className="rounded-lg bg-primary-green px-4 py-2 text-xl font-bold text-dark-darkMain">
-              Search
-            </Button>
-          </div>
+        <div className="flex items-center justify-end gap-2">
+          <Button className="inline-flex w-[110px] items-center gap-2 rounded-lg bg-dark-darkLight px-4 py-2 text-xl font-bold text-primary-purpleMedium">
+            <Image src="/tune.svg" alt="Tune Icon" width={24} height={24} />
+            Filters
+          </Button>
+
+          <Button className="rounded-lg bg-primary-green px-4 py-2 text-xl font-bold text-dark-darkMain">
+            Search
+          </Button>
         </div>
       </form>
       <div className="h-8" />
       <div>
         <h3 className="text-2xl font-bold text-primary-green">Your search</h3>
         <div className="h-4" />
-        {/* <p
-          className={cn([
-            "hidden border border-transparent text-primary-purpleMedium",
-            search && search === ""
-              ? ""
-              : "inline-flex items-center gap-2 rounded-full border border-primary-purpleMedium px-3 py-1",
-          ])}
-        >
-          {search}
-        </p> */}
         <div className="flex w-full items-center gap-2">
           <div
             className={cn([

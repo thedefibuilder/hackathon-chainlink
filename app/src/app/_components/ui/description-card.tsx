@@ -20,7 +20,7 @@ const content = [
 export default function DescriptionCard() {
   return (
     <>
-      <h1 className="text-center text-5xl font-bold">
+      <h1 className="text-center text-4xl font-bold">
         Streamline the Smart Contracts of Your dApp
       </h1>
       <div className="h-6" />

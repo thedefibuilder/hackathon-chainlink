@@ -9,12 +9,12 @@ export default function TabsReview() {
   return (
     <>
       <Tabs className="flex h-full w-full items-start gap-5" defaultValue="0">
-        <TabsList className="flex w-2/5 flex-col gap-4">
+        <TabsList className="flex w-[30%] flex-col gap-4">
           {reviewContent.map((item, index) => (
             <TabsTrigger
               key={index}
               value={index.toString()}
-              className="flex w-full flex-col rounded-[16px] border border-dark-darkLight !p-3   text-textLight"
+              className="flex w-full flex-col rounded-[16px] border border-dark-darkLight !p-3  text-textLight"
             >
               <TabsCard
                 imageSrc={item.imageSrc}
@@ -29,7 +29,7 @@ export default function TabsReview() {
             </TabsTrigger>
           ))}
         </TabsList>
-        <div className="w-3/5  rounded-[16px] border border-dark-darkLight !p-0 text-textLight">
+        <div className="rounded-[16px] border border-dark-darkLight !p-0 text-textLight">
           {reviewContent.map((item, index) => {
             return (
               <TabsContent
@@ -50,7 +50,7 @@ export default function TabsReview() {
                   cips={item.cips}
                 />
 
-                <div className="h-20" />
+                <div className="h-10" />
                 <h2 className="text-5xl font-bold text-textLight">
                   5 Vulnerabilites found
                 </h2>

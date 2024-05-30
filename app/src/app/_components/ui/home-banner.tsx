@@ -22,19 +22,29 @@ export default function HomeBanner({
   align?: string;
 }) {
   return (
-    <div className="rounded-r-[32px] bg-toright-gradient p-6 px-12">
+    <div className="rounded-r-[32px] bg-toright-gradient p-6">
       {isTwoCol ? (
         <div className="flex w-full items-center justify-evenly gap-28">
-          <div className={cn([align === "textFirst" ? "order-2" : "order-1"])}>
+          <div
+            className={cn([
+              "w-1/2",
+              align === "textFirst" ? "order-2" : "order-1",
+            ])}
+          >
             <Image
               src={imageSrc}
               alt="Laptop Image"
               width={500}
               height={300}
-              className="h-[300px] w-[500px]"
+              className="h-full w-full"
             />
           </div>
-          <div className={cn([align === "textFirst" ? "order-1" : "order-2 "])}>
+          <div
+            className={cn([
+              "w-1/2",
+              align === "textFirst" ? "order-1" : "order-2 ",
+            ])}
+          >
             <h2 className="text-5xl font-bold">{title}</h2>
             <div className="h-2" />
             <p className=" text-2xl">{text}</p>
@@ -51,20 +61,24 @@ export default function HomeBanner({
         <>
           <h2 className="text-center text-5xl font-bold">{title}</h2>
           <div className="h-10" />
-          <div className="flex w-full gap-28">
-            <p className=" w-2/5 text-2xl">{text}</p>
-            <Image
-              src={imageSrc}
-              alt="Laptop Image"
-              width={600}
-              height={300}
-              className="h-[300px] w-[600px]"
-            />
-            <div className="flex flex-col justify-between">
+          <div className="flex w-full justify-between">
+            <div className="w-[20%]">
+              <p className="text-2xl">{text}</p>
+            </div>
+            <div className="w-[50%]">
+              <Image
+                src={imageSrc}
+                alt="Laptop Image"
+                width={600}
+                height={300}
+                className="h-full w-full "
+              />
+            </div>
+            <div className="flex w-[30%] flex-col justify-between">
               <p className="text-2xl">{secondText}</p>
               <Link
                 href={link}
-                className="w-[55%] rounded-lg bg-primary-green px-4 py-2 text-2xl font-bold text-dark-darkMain"
+                className="rounded-lg bg-primary-green px-4 py-2 text-center text-xl font-bold text-dark-darkMain"
               >
                 {linkText}
               </Link>

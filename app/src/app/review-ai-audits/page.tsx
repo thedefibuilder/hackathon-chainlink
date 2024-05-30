@@ -4,7 +4,7 @@ import TabsReview from "../_components/ui/tabs-review/tabs-review";
 
 export default function ReviewAiAuditsPage() {
   return (
-    <main className="min-h-screen bg-dark-darkMain px-36 text-white">
+    <main className="min-h-screen bg-dark-darkMain px-24 text-white">
       <div className="h-8" />
       <HeroBanner
         title="Review AI Audits"

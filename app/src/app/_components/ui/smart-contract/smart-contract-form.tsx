@@ -23,14 +23,16 @@ export default function SmartContractForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="flex gap-6">
       <div className="w-full">
         <div className="flex w-full gap-2">
-          <Input
-            type="text"
-            placeholder="Give your code a Title"
-            {...register("title")}
-            error={errors.title?.message}
-            className="w-full"
-          />
-          <div className="w-1/2">
+          <div className="w-[60%]">
+            <Input
+              type="text"
+              placeholder="Give your code a Title"
+              {...register("title")}
+              error={errors.title?.message}
+              className="w-full"
+            />
+          </div>
+          <div className="w-[40%]">
             <Input
               type="text"
               placeholder="Give it an author name"
@@ -49,26 +51,25 @@ export default function SmartContractForm() {
           </div>
         </div>
         <div className="h-6" />
-        <div className="bg-custom-gradient rounded-b-[32px] px-6">
+        <div className="rounded-b-[32px] bg-custom-gradient px-6">
           wip
           <div className="h-40"></div>
           <div className="h-28"></div>
         </div>
       </div>
-      <div className="relative flex w-1/4 flex-col ">
+      <div className="relative flex w-1/2 flex-col justify-between">
         <Image
           src="/starsIcons.png"
           alt="Stars Icons"
           width={160}
           height={111}
-          className="absolute right-1 top-4 h-28 w-40"
+          className="absolute -right-8 top-4 h-28 w-40"
         />
-        <div className="h-3" />
         <p className="relative z-40 pr-6 text-2xl font-bold">
           Deliver safer code, and get audited in seconds with data rich AI.
         </p>
-        <div className="h-[200px]"></div>
-        <Button className="bg-primary-green text-dark-darkMain w-full rounded-lg px-4 py-2 text-2xl font-bold">
+
+        <Button className="w-full rounded-lg bg-primary-green px-4 py-2 text-2xl font-bold text-dark-darkMain">
           Audit my Smart Contract
         </Button>
       </div>

@@ -33,7 +33,7 @@ export default function SectionTitle({
         className="h-12 w-12"
       />
       <div className="flex flex-col">
-        <h2 className="text-[32px] font-bold">{title}</h2>
+        <h2 className="text-3xl font-bold">{title}</h2>
         <p>{text}</p>
       </div>
     </div>

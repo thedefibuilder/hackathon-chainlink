@@ -40,9 +40,12 @@ export default function DeployCard({
             </div>
             <div className="h-6"></div>
             <div className="flex w-full items-center gap-3 ">
-              <div className="flex w-full items-center justify-between">
+              <div className="flex w-full items-center gap-2">
                 {icons.map((icon, iconIndex) => (
-                  <div key={iconIndex} className="flex items-center gap-2">
+                  <div
+                    key={iconIndex}
+                    className="flex  items-center gap-2 pb-2"
+                  >
                     <Image
                       src={icon.iconImage}
                       alt={icon.iconAlt}
@@ -50,7 +53,9 @@ export default function DeployCard({
                       height={20}
                       className="h-5 w-5"
                     />
-                    <p className="font-bold text-textLight">{icon.value}</p>
+                    <p className="truncate font-bold text-textLight">
+                      {icon.value}
+                    </p>
                   </div>
                 ))}
               </div>

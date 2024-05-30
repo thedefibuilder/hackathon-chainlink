@@ -2,8 +2,8 @@ import Image from "next/image";
 
 export default function TotalAward() {
   return (
-    <div className="flex ">
-      <div className="w-1/4">
+    <div className="flex w-full justify-between">
+      <div className="w-[35%]">
         <Image
           src="/coin.png"
           alt="coin"
@@ -12,7 +12,7 @@ export default function TotalAward() {
           className="h-[114px] w-[114px]"
         />
       </div>
-      <div className="w-4/6">
+      <div className="w-[60%]">
         <p className="text-[24px] font-medium">Total Awarded</p>
         <p className="text-5xl">
           <span className="font-bold">$2500</span> USDC
