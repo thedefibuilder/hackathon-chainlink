@@ -4,6 +4,8 @@ import { TRPCReactProvider } from "@/trpc/react";
 import Header from "./_components/ui/header";
 import Footer from "./_components/ui/footer";
 import NextAuthProvider from "@/providers/next-auth";
+import Web3Provider from "@/providers/web3";
+import { Toaster } from "./_components/toast/toaster";
 
 export const metadata = {
   title: "DeFi Builder AI",
@@ -22,12 +24,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={darkerGrotesque.className}>
-        <Header />
-        <div className="h-16" />
-        <NextAuthProvider>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
-        </NextAuthProvider>
-        <Footer />
+        <Web3Provider>
+          <NextAuthProvider>
+            <TRPCReactProvider>
+              <Header />
+
+              {children}
+
+              <Footer />
+
+              <Toaster />
+            </TRPCReactProvider>
+          </NextAuthProvider>
+        </Web3Provider>
       </body>
     </html>
   );
