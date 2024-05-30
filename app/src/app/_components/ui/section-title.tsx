@@ -1,3 +1,4 @@
+import { cn } from "lib/utils";
 import Image from "next/image";
 
 export default function SectionTitle({
@@ -7,6 +8,7 @@ export default function SectionTitle({
   imgAlt,
   imgWidth,
   imgHeight,
+  titelStart,
 }: {
   title: string;
   text: string;
@@ -14,9 +16,15 @@ export default function SectionTitle({
   imgAlt: string;
   imgWidth: number;
   imgHeight: number;
+  titelStart?: boolean;
 }) {
   return (
-    <div className="text-textLight flex items-center gap-4 ">
+    <div
+      className={cn([
+        "flex  gap-4 text-textLight ",
+        titelStart ? "items-start" : "items-center",
+      ])}
+    >
       <Image
         src={imgSrc}
         alt={imgAlt}

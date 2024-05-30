@@ -26,7 +26,9 @@ export default function Header() {
       <div className="h-4" />
       <nav className="flex justify-between px-24">
         <div className="flex items-center gap-20">
-          <Image src="/logo.png" alt="logo" width={108} height={108} />
+          <Link href="/">
+            <Image src="/logo.png" alt="logo" width={108} height={108} />
+          </Link>
           <ul className="flex items-center gap-8">
             {links.map((item, index) => {
               return (
