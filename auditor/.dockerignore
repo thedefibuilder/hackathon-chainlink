@@ -1,0 +1,14 @@
+__pycache__
+data
+deployment
+Include
+Scripts
+share
+Lib
+.dockerignore
+.env
+AUDITOR.md
+*.ipynb
+*.log
+pyvenv.cfg
+*.csv

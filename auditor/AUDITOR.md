@@ -28,3 +28,30 @@ The main questions that we need to solve are:
 Models that can be used for code similarity embedding:
 - code-search-babbage-{doc, query}-001
 - 
+
+now we can do similarity search, the next step is to get the create the context, then create the prompt, send the prompt to an LLM, decode the result and supply everything as an API
+
+For deployment, we need an endpoint that will recieve the contract, then internally we break it into functions, do semantic search with the functions and then provide those as context for our LLM query, which will have the original contract, context, and return a structured output of top K vulnerabilities. 
+
+If our semantic search can return 
+
+TODO:
+
+- Query model 
+    - Create Langchain query structure - LangChain prompt template
+    - Create structured response - LangChain structured response
+    - Integrate similarity search - Done
+    - Add endpoint to add code examples - Done
+    - Split incoming contract into functions - Split code utils function - Done
+
+
+Example prompt:
+
+Please analyze the following code: {code} and tell me if you detect any vulnerabilities. You should make use of your own knowledge as well as the following information in your answer.
+
+
+### Further code processing
+- Make a collection of code to vulnerability detail, impact, and severity: index on code - Done
+- Make a collection mapping velenerability detail to recommended remediation steps: index on vulnerability detail
+- Process Sherlock vulnerabilites
+- 
