@@ -90,3 +90,6 @@ cython_debug/
 
 *.log
 share
+auditor/data/training_data.pkl
+chainlink-hack.pem
+chainlink_hack.pem
