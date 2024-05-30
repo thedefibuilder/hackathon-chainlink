@@ -9,27 +9,36 @@ import {
   DropdownMenuItem,
   DropdownMenuGroup,
 } from "../drop-down";
+import Button from "../button";
+import ENSName from "../../wallet/dropdown/details/ens-name";
 
 export default function UserDropDown() {
+  const isGithubConnected = true;
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger>
+        {/* TODO: isGithubConnected ? showAvatar : showDefaultAvatar */}
         <Avatar>
           <AvatarImage src="https://github.com/shadcn.png" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-[180px] border-primary-purpleMedium bg-dark-darkMain text-textLight">
-        <DropdownMenuLabel className="border-b border-primary-purpleMedium pb-2 text-2xl">
-          Roland Flavius
-        </DropdownMenuLabel>
+        {isGithubConnected ? (
+          <DropdownMenuLabel className="border-b border-primary-purpleMedium pb-2 text-2xl">
+            Roland Flavius
+          </DropdownMenuLabel>
+        ) : (
+          <Button className="rounded-full bg-primary-green px-4 py-1 font-bold text-dark-darkMain">
+            Connect Github
+          </Button>
+        )}
+
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <div className="text-l flex w-full  items-center justify-between font-bold">
-              <p>ENS</p>
-              <p>urataps.eth</p>
-            </div>
+            <ENSName address="0x1234567890" />
           </DropdownMenuItem>
           <DropdownMenuItem>
             <div className="text-l flex w-full  items-center justify-between font-bold">

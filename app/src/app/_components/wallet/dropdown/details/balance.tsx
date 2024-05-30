@@ -10,11 +10,11 @@ import { useBalance } from "wagmi";
 import Label from "./label";
 import { DropdownMenuLabel } from "@/app/_components/ui/drop-down";
 
-type TENSName = {
+type TBalance = {
   address: Address | undefined;
 };
 
-export default function Balance({ address }: TENSName) {
+export default function Balance({ address }: TBalance) {
   const { isLoading, data } = useBalance({ address });
 
   const walletBalance = useMemo(

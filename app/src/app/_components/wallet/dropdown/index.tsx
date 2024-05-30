@@ -12,6 +12,7 @@ import {
 } from "../../ui/drop-down";
 import Button from "../../ui/button";
 import DynamicFallback from "./dynamic-fallback";
+import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 
 const CopyAddress = dynamic(() => import("./actions/copy-address"), {
   loading: () => <DynamicFallback />,
@@ -50,6 +51,8 @@ const Network = dynamic(() => import("./details/network"), {
 });
 
 export default function WalletDropdown() {
+  // todo: get from next auth
+  const isGithubConnected = false;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isQRCodeDialogOpen, setIsQRCodeDialogOpen] = useState(false);
   const [isSwitchNetworkDialogOpen, setIsSwitchNetworkDialogOpen] =
@@ -71,14 +74,13 @@ export default function WalletDropdown() {
   return (
     <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
       <DropdownMenuTrigger asChild>
-        <Button
-          onClick={() => setIsDropdownOpen((previousState) => !previousState)}
-        >
-          {displayAddress}
-        </Button>
+        <Avatar>
+          <AvatarImage src="https://github.com/shadcn.png" />
+          <AvatarFallback>0x</AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-56"
+        className="w-56 border-primary-purpleMedium bg-dark-darkMain text-textLight"
         hidden={isQRCodeDialogOpen || isSwitchNetworkDialogOpen}
         onCloseAutoFocus={(event) => {
           if (focusReference.current) {
@@ -89,7 +91,15 @@ export default function WalletDropdown() {
           }
         }}
       >
-        <DropdownMenuLabel>Details</DropdownMenuLabel>
+        {isGithubConnected ? (
+          <DropdownMenuLabel className="border-b border-primary-purpleMedium pb-2 text-2xl">
+            Roland Flavius
+          </DropdownMenuLabel>
+        ) : (
+          <Button className="rounded-full bg-primary-green px-4 py-1 font-bold text-dark-darkMain">
+            Connect Github
+          </Button>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <ENSName address={address} />

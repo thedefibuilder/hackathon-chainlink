@@ -2,9 +2,9 @@
 import Image from "next/image";
 import Button from "./button";
 import Link from "next/link";
-import UserDropDown from "./user-drop-down/user-drop-down";
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
+import WalletDropdown from "../wallet/dropdown";
 
 const links = [
   {
@@ -43,7 +43,7 @@ export default function Header() {
           </ul>
         </div>
         {isConnected ? (
-          <UserDropDown />
+          <WalletDropdown />
         ) : (
           <Button className="text-greenDark rounded-full bg-primary-green px-4 py-1 text-base font-bold">
             <ConnectButton label="Connect Wallet" />

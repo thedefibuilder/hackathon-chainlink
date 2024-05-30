@@ -2,18 +2,18 @@
 
 import React, { useMemo } from "react";
 
-import { useChainId, useChains } from "wagmi";
+import { useChainId } from "wagmi";
 
 import Label from "./label";
 import { DropdownMenuLabel } from "@/app/_components/ui/drop-down";
+import { chainsConfig } from "@/config/chains";
 
 export default function Network() {
-  const chains = useChains();
   const activeChainId = useChainId();
 
   const activeChain = useMemo(
-    () => chains.find((chain) => chain.id === activeChainId),
-    [activeChainId, chains],
+    () => chainsConfig.find((chain) => chain.network.id === activeChainId),
+    [activeChainId],
   );
 
   return (
