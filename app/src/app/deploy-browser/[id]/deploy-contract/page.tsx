@@ -19,7 +19,7 @@ export default function DeployContractPage({
   const item = deployCardContent.find((item) => item.id.toString() === id);
 
   return (
-    <main className="min-h-screen bg-dark-darkMain px-36 text-white">
+    <main className="min-h-screen bg-dark-darkMain px-24 text-white">
       <div className="h-8" />
       <section className="flex items-end justify-between">
         <div>
@@ -37,7 +37,7 @@ export default function DeployContractPage({
       <div className="h-8" />
 
       <div className="flex flex-wrap  justify-between">
-        <div className="w-[65%]">
+        <div className="w-[60%]">
           <SectionTitle
             title="Deploy Smart Contract"
             text="This smart contract has been audited, reviewed and is ready to deploy"
@@ -55,8 +55,8 @@ export default function DeployContractPage({
           <div className="h-[26px]" />
           <SuggestedAccordion />
         </div>
-        <div className="w-[32%]">
-          <div className="h-24" />
+        <div className="w-[38%]">
+          <div className="h-10" />
           <DeployContracCard />
           <div className="h-8" />
           <TotalAward />

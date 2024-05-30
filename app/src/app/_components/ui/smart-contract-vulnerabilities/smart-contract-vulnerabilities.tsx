@@ -7,11 +7,11 @@ export default function SmartContractVulnerabilities() {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between">
-        <div className="w-[85%]">
+        <div className="w-[70%]">
           <h2 className="text-5xl font-bold">
             Your Smart Contract Vulnerabilities
           </h2>
-          <div className="h-2" />
+          <div className="h-5" />
           <div className="flex gap-3">
             {cipsContent.map((item, index) => {
               return (
@@ -33,21 +33,22 @@ export default function SmartContractVulnerabilities() {
             })}
           </div>
         </div>
-        <div className="w-[13%]">
-          <div className="flex gap-2 rounded-lg bg-white px-4">
+        <div className="flex w-[24%]  justify-end gap-2">
+          <div className="flex rounded-lg bg-white px-4">
             <div className="flex flex-col ">
               <h3 className="mb-0 text-[32px] font-bold text-dark-darkMain">
                 5
               </h3>
               <p className="font-bold text-dark-darkMain">Vulnerabilities</p>
             </div>
-            <Image
-              src="/shield_icon.png"
-              alt="Shield Icon"
-              width={72}
-              height={72}
-            />
-            <div className="h-1" />
+            <div className="flex justify-end">
+              <Image
+                src="/shield_icon.png"
+                alt="Shield Icon"
+                width={72}
+                height={72}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -69,6 +70,7 @@ export default function SmartContractVulnerabilities() {
       <div className="h-8" />
       <>
         <h2 className="text-5xl font-bold text-textLight">Summary</h2>
+        <div className="h-2" />
         <p className="w-3/4 text-xl">
           This smart contract is vulnerable to reentrancy attacks, lacks proper
           access control, has potential state manipulation issues, and lacks

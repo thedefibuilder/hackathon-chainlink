@@ -54,7 +54,7 @@ export default function ReviewAiForm() {
   const totalRewardAmount = totalAmount();
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="relative flex">
+    <form onSubmit={handleSubmit(onSubmit)} className="relative flex gap-8">
       <Image
         src="/coin.png"
         alt="coin"
@@ -128,11 +128,11 @@ export default function ReviewAiForm() {
       </div>
       <div className="w-1/2">
         <div className="flex flex-col items-center justify-center">
-          <h3 className="text-5xl font-bold text-textLight">
+          <h3 className="text-center text-5xl font-bold text-textLight">
             Total USDC to reward
           </h3>
           <div className="h-[52px]" />
-          <h2 className="w-[200px] text-[128px] font-bold text-textLight">
+          <h2 className="w-[200px] text-center text-[128px] font-bold text-textLight">
             ${totalRewardAmount}
           </h2>
         </div>

@@ -26,7 +26,7 @@ export default function VulnerabilitiesCard({
     <Dialog>
       <div
         className={cn([
-          "relative w-[32.2%] rounded-lg p-4 pl-8",
+          "relative w-[48%] rounded-lg p-4 pl-8",
           className,
           score === "Critical" ? "bg-red-gradient" : "",
           score === "High" ? "bg-orange-gradient" : "",
@@ -43,44 +43,44 @@ export default function VulnerabilitiesCard({
             score === "Low" ? "bg-primary-greenMedium" : "",
           ])}
         />
-        <div className="flex gap-4">
+        <div className="flex items-center gap-4">
           <h2 className="text-5xl font-extrabold text-textLight">0{id}</h2>
-          <div className="flex w-full flex-col">
-            <h3 className="text-2xl font-extrabold text-textLight">{title}</h3>
-            <div className="h-4" />
-            <p className="h-[88px] text-textLight">{text}</p>
-            <div className="h-5" />
-            <div className="inline-flex justify-end gap-2">
-              <div
-                className={cn([
-                  "rounded-full px-4 py-1",
-                  score === "Critical" ? "bg-primary-red" : "",
-                  score === "High" ? "bg-primary-orange" : "",
-                  score === "Medium" ? "bg-primary-yellow" : "",
-                  score === "Low" ? "bg-primary-greenMedium" : "",
-                ])}
-              >
-                <p className="font-black text-primary-redBold">{score}</p>
-              </div>
-              <DialogTrigger
-                className={cn([
-                  "h-[30px] w-[30px] rounded-full",
-                  score === "Critical" ? "bg-primary-red" : "",
-                  score === "High" ? "bg-primary-orange" : "",
-                  score === "Medium" ? "bg-primary-yellow" : "",
-                  score === "Low" ? "bg-primary-greenMedium" : "",
-                ])}
-              >
-                <Image
-                  src="/add.svg"
-                  alt="Add Icon"
-                  width={24}
-                  height={24}
-                  className="m-auto h-6 w-6"
-                />
-              </DialogTrigger>
-              <div className="h-5" />
+          <h3 className="text-3xl font-extrabold text-textLight">{title}</h3>
+        </div>
+        <div className="flex w-full flex-col">
+          <div className="h-6" />
+          <p className="w-[90%] text-textLight">{text}</p>
+          <div className="h-5" />
+          <div className="inline-flex justify-end gap-2">
+            <div
+              className={cn([
+                "rounded-full px-4 py-1",
+                score === "Critical" ? "bg-primary-red" : "",
+                score === "High" ? "bg-primary-orange" : "",
+                score === "Medium" ? "bg-primary-yellow" : "",
+                score === "Low" ? "bg-primary-greenMedium" : "",
+              ])}
+            >
+              <p className="font-black text-primary-redBold">{score}</p>
             </div>
+            <DialogTrigger
+              className={cn([
+                "h-[30px] w-[30px] rounded-full",
+                score === "Critical" ? "bg-primary-red" : "",
+                score === "High" ? "bg-primary-orange" : "",
+                score === "Medium" ? "bg-primary-yellow" : "",
+                score === "Low" ? "bg-primary-greenMedium" : "",
+              ])}
+            >
+              <Image
+                src="/add.svg"
+                alt="Add Icon"
+                width={24}
+                height={24}
+                className="m-auto h-6 w-6"
+              />
+            </DialogTrigger>
+            <div className="h-5" />
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ import HeroBanner from "../_components/ui/hero-banner";
 
 export default function DeployBrowser() {
   return (
-    <main className="min-h-screen bg-dark-darkMain px-36 text-white">
+    <main className="min-h-screen bg-dark-darkMain px-24 text-white">
       <div className="h-8" />
       <HeroBanner
         title="Deploy Code"
@@ -20,7 +20,7 @@ export default function DeployBrowser() {
       />
       <div className="h-8" />
       <div className="flex w-full justify-between">
-        <div className="w-[20%]">
+        <div className="w-[25%]">
           <DeployBrowserSearch />
         </div>
         <div className="w-1/2">
@@ -46,7 +46,7 @@ export default function DeployBrowser() {
             })}
           </div>
         </div>
-        <div className="w-[20%]">
+        <div>
           <TopContributors />
         </div>
       </div>

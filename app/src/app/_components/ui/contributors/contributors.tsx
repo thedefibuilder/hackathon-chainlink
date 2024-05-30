@@ -19,44 +19,49 @@ export default function Contributors() {
         {contributors.map((item, index) => {
           return (
             <div className="flex items-center gap-2" key={index}>
-              <Image
-                src={item.imageSrc}
-                alt="Contributors Image"
-                width={64}
-                height={64}
-                className="h-16 w-16 rounded-lg"
-              />
-              <div className="flex w-[70%] flex-col">
-                <p className="text-2xl font-bold">{item.name}</p>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <Image
-                      src={item.commentsIcon}
-                      alt="Review Icon"
-                      width={20}
-                      height={20}
-                      className="h-5 w-5"
-                    />
-                    <p className="font-bold">{item.comments}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Image
-                      src={item.linesCodeIcon}
-                      alt="Review Icon"
-                      width={20}
-                      height={20}
-                      className="h-5 w-5"
-                    />
-                    <p className="font-bold">{item.linesCode}</p>
+              <div className="flex w-[70%] items-center gap-2">
+                <Image
+                  src={item.imageSrc}
+                  alt="Contributors Image"
+                  width={64}
+                  height={64}
+                  className="h-16 w-16 rounded-lg"
+                />
+
+                <div className="w-[60%] ">
+                  <p className="text-2xl font-bold">{item.name}</p>
+                  <div className="flex items-center gap-2  ">
+                    <div className="flex items-center gap-1">
+                      <Image
+                        src={item.commentsIcon}
+                        alt="Review Icon"
+                        width={20}
+                        height={20}
+                        className="h-5 w-5"
+                      />
+                      <p className="truncate">{item.comments}</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Image
+                        src={item.linesCodeIcon}
+                        alt="Review Icon"
+                        width={20}
+                        height={20}
+                        className="h-5 w-5"
+                      />
+                      <p className="truncate">{item.linesCode}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="flex w-[20%] flex-col">
-                <p className="text-2xl ">{item.date}</p>
-                <div className="h-2" />
-                <Button className="px2 w-1/2 rounded-full bg-primary-green py-1 font-bold text-dark-darkMain">
-                  More
-                </Button>
+              <div className="w-[35%]">
+                <div className="flex flex-col items-end">
+                  <p className="truncate text-2xl">{item.date}</p>
+                  <div className="h-2" />
+                  <Button className="px2 w-1/2 rounded-full bg-primary-green py-1 font-bold text-dark-darkMain">
+                    More
+                  </Button>
+                </div>
               </div>
             </div>
           );

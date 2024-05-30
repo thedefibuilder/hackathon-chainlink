@@ -44,6 +44,7 @@ export default function SuggestedAccordion() {
             >
               <SuggestedCard title={item.title} text={item.text} isAccoriodn />
             </AccordionTrigger>
+
             <AccordionContent className="mb-4 rounded-b-lg bg-dark-darkLight px-4">
               <div className="h-2" />
               <p className="text-2xl font-bold text-textLight">
@@ -55,6 +56,7 @@ export default function SuggestedAccordion() {
           </AccordionItem>
         ))}
       </Accordion>
+      <div className="h-4" />
     </>
   );
 }

@@ -6,7 +6,7 @@ import SuggestedChanges from "../_components/ui/suggested-changes/suggested-chan
 
 export default function AuditPage() {
   return (
-    <main className="bg-dark-darkMain min-h-screen px-36 text-white">
+    <main className="min-h-screen bg-dark-darkMain px-24 text-white">
       <div className="h-8" />
       <HeroBanner
         title="Your AI auditor"

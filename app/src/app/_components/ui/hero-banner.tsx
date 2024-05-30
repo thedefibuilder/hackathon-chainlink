@@ -22,7 +22,7 @@ export default function HeroBanner({
     <div className="rounded-b-[32px] bg-custom-gradient px-6">
       <div className="h-6" />
       <div className="flex w-full justify-between">
-        <div>
+        <div className="w-[30%]">
           <h1
             className={cn([
               "text-5xl font-bold text-primary-green",
@@ -32,14 +32,19 @@ export default function HeroBanner({
             {title}
           </h1>
         </div>
-        <Image
-          src={img}
-          alt={imgAlt}
-          width={imgWidth}
-          height={imgHeight}
-          className="w-[260px]"
-        />
-        <p className="w-80 text-[32px]">{text}</p>
+        <div className="w-[30%]">
+          <Image
+            src={img}
+            alt={imgAlt}
+            width={imgWidth}
+            height={imgHeight}
+            className="h-full w-full"
+          />
+        </div>
+        <div className="w-[30%]">
+          <p className="text-[32px]">{text}</p>
+          <div className="h-4" />
+        </div>
       </div>
     </div>
   );
