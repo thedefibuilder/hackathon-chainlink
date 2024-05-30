@@ -28,7 +28,7 @@
     "@radix-ui/react-tabs": "^1.0.4",
     "@rainbow-me/rainbowkit": "^2.1.1",
     "@t3-oss/env-nextjs": "^0.10.1",
-    "@tanstack/react-query": "^5.40.0",
+    "@tanstack/react-query": "^5.28.14",
     "@trpc/client": "next",
     "@trpc/react-query": "next",
     "@trpc/server": "next",
@@ -45,8 +45,8 @@
     "server-only": "^0.0.1",
     "superjson": "^2.2.1",
     "tailwind-merge": "^2.3.0",
-    "viem": "~2.13.1",
-    "wagmi": "^2.9.8",
+    "viem": "~2.9.6",
+    "wagmi": "^2.5.17",
     "zod": "^3.23.3"
   },
   "devDependencies": {

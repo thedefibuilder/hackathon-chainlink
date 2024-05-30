@@ -1,7 +1,10 @@
+"use client";
 import Image from "next/image";
 import Button from "./button";
 import Link from "next/link";
 import UserDropDown from "./user-drop-down/user-drop-down";
+import { useAccount } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 const links = [
   {
@@ -18,9 +21,9 @@ const links = [
   },
 ];
 
-const isLogin = true;
-
 export default function Header() {
+  const { isConnected } = useAccount();
+
   return (
     <header className="fixed z-50 w-full bg-dark-darkMain">
       <div className="h-4" />
@@ -39,14 +42,12 @@ export default function Header() {
             })}
           </ul>
         </div>
-        {isLogin ? (
+        {isConnected ? (
           <UserDropDown />
         ) : (
-          <Link href="/">
-            <Button className="text-greenDark rounded-full bg-primary-green px-4 py-1 text-base font-bold">
-              Log In
-            </Button>
-          </Link>
+          <Button className="text-greenDark rounded-full bg-primary-green px-4 py-1 text-base font-bold">
+            <ConnectButton label="Connect Wallet" />
+          </Button>
         )}
       </nav>
       <div className="h-4" />

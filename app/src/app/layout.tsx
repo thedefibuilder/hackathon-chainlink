@@ -23,14 +23,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={darkerGrotesque.className}>
-        <Header />
-        <div className="h-16" />
         <Web3Provider>
           <NextAuthProvider>
-            <TRPCReactProvider>{children}</TRPCReactProvider>
+            <TRPCReactProvider>
+              <Header />
+
+              {children}
+
+              <Footer />
+            </TRPCReactProvider>
           </NextAuthProvider>
         </Web3Provider>
-        <Footer />
       </body>
     </html>
   );
