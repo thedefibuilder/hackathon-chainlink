@@ -10,12 +10,9 @@ import Button from "./button";
 import { cn } from "lib/utils";
 
 export default function SearchReview() {
-  const {
-    handleSubmit,
-    formState: { errors },
-    register,
-    watch,
-  } = useForm<z.infer<typeof SearchSchema>>({
+  const { handleSubmit, register, watch } = useForm<
+    z.infer<typeof SearchSchema>
+  >({
     resolver: zodResolver(SearchSchema),
     defaultValues: {
       search: "",

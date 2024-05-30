@@ -1,4 +1,3 @@
-import Image from "next/image";
 import SmartContractForm from "./smart-contract-form";
 import SectionTitle from "../section-title";
 

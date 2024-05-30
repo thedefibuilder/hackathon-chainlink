@@ -520,3 +520,33 @@ export const coins = [
     value: "Linea",
   },
 ];
+export const homeBannerData = [
+  {
+    title: "One AI to Audit Them All",
+    text: "Speed-up your dApp development, get suggested changes for your smart contracts, and create rewards for human reviewers.",
+    imageSrc: "/audit-macbook.png",
+    link: "/audit",
+    linkText: "Audit my Smart Contract",
+    isTwoCol: true,
+    align: "imageFirst",
+  },
+  {
+    title: "Human touch always pays",
+    text: "Test your skills and review smart contracts audited by AI. Get rewarded for fixing vulnerabilities and get code ready to deploy.",
+    imageSrc: "/review-macbook.png",
+    link: "/review-ai-audits",
+    linkText: "Review Audited Smart Contracts",
+    isTwoCol: true,
+    align: "textFirst",
+  },
+  {
+    title: "Deploy Audited and Reviewed Smart Contracts",
+    text: "Browse smart contracts for all use cases audited by AI and reviewed by Humans",
+    secondText:
+      "Code ready to deploy on any EVM network, speed up your dApp development",
+    imageSrc: "/deploy-macbook.png",
+    link: "/deploy-browser",
+    linkText: "Browse to Deploy",
+    align: "textFirst",
+  },
+];
