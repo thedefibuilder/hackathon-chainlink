@@ -19,10 +19,10 @@ export default function HomeBanner({
   imageSrc: string;
   link: string;
   linkText: string;
-  align?: "imageFirst" | "textFirst" | string;
+  align?: string;
 }) {
   return (
-    <div className="bg-toright-gradient rounded-r-[32px] p-6 px-12">
+    <div className="rounded-r-[32px] bg-toright-gradient p-6 px-12">
       {isTwoCol ? (
         <div className="flex w-full items-center justify-evenly gap-28">
           <div className={cn([align === "textFirst" ? "order-2" : "order-1"])}>

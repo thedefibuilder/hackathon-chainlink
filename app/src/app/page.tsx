@@ -53,6 +53,7 @@ export default function Home() {
         {homeBannerData.map((item, index) => {
           return (
             <HomeBanner
+              key={index}
               title={item.title}
               text={item.text}
               imageSrc={item.imageSrc}

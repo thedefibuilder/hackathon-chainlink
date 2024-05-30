@@ -17,8 +17,6 @@ export default function DeployContractForm({
     handleSubmit,
     formState: { errors },
     register,
-    setValue,
-    watch,
   } = useForm<z.infer<typeof DeployContractSchema>>({
     resolver: zodResolver(DeployContractSchema),
     defaultValues: {
