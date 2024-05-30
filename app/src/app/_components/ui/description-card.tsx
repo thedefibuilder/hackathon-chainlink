@@ -40,7 +40,7 @@ export default function DescriptionCard() {
                 imgAlt="icon"
                 imgWidth={54}
                 imgHeight={54}
-                titelStart
+                titleStart
               />
             </div>
           );
