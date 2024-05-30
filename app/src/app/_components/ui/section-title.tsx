@@ -8,7 +8,7 @@ export default function SectionTitle({
   imgAlt,
   imgWidth,
   imgHeight,
-  titelStart,
+  titleStart,
 }: {
   title: string;
   text: string;
@@ -16,13 +16,13 @@ export default function SectionTitle({
   imgAlt: string;
   imgWidth: number;
   imgHeight: number;
-  titelStart?: boolean;
+  titleStart?: boolean;
 }) {
   return (
     <div
       className={cn([
         "flex  gap-4 text-textLight ",
-        titelStart ? "items-start" : "items-center",
+        titleStart ? "items-start" : "items-center",
       ])}
     >
       <Image
