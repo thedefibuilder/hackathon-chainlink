@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25;
 
 import { Address } from "@oz/utils/Address.sol";
@@ -8,6 +8,8 @@ import { ERC721Enumerable } from "@oz/token/ERC721/extensions/ERC721Enumerable.s
 import { FunctionsClient } from "@chainlink/functions/v1_0_0/FunctionsClient.sol";
 import { FunctionsRequest } from "@chainlink/functions/v1_0_0/libraries/FunctionsRequest.sol";
 import { AggregatorV3Interface } from "@chainlink/shared/interfaces/AggregatorV3Interface.sol";
+
+import { WrappedNative } from "src/WrappedNative.sol";
 
 contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
     using FunctionsRequest for FunctionsRequest.Request;
@@ -33,6 +35,7 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
     // 1.337 USD per generation
     uint256 public constant generationFeeInUSD = 1.337e8;
     address payable public immutable auditorsVault;
+    WrappedNative public immutable wrappedNative;
     mapping(bytes32 requestId => RequestData data) public requests;
 
     // TODO: convert constants to separate file
@@ -53,8 +56,15 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
     uint256 private constant unitDifference = 10 ** nativeTokenDecimals - 10 ** priceFeedDecimals;
     uint256 private constant nativeTokenUnit = 10 ** nativeTokenDecimals;
 
-    constructor(address vault) ERC721("DeFi Builder AI", "BUILD") FunctionsClient(functionsRouter) {
+    constructor(
+        address vault,
+        WrappedNative wNative
+    )
+        ERC721("DeFi Builder AI", "BUILD")
+        FunctionsClient(functionsRouter)
+    {
         auditorsVault = payable(vault);
+        wrappedNative = wNative;
     }
 
     function requestAuditUpdate(
@@ -74,7 +84,7 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
         requests[requestId] = RequestData(address(0), tokenId, contractURI);
 
         _refundUser(price);
-        auditorsVault.sendValue(price);
+        _sendFeeToVault(price);
     }
 
     function requestNewAudit(
@@ -95,7 +105,7 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
         requests[requestId] = RequestData(msg.sender, tokenId, contractURI);
 
         _refundUser(price);
-        auditorsVault.sendValue(price);
+        _sendFeeToVault(price);
     }
 
     function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
@@ -129,6 +139,11 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
         args[0] = contractURI;
         req.setArgs(args);
         requestId = _sendRequest(req.encodeCBOR(), subscriptionId, gasLimit, donId);
+    }
+
+    function _sendFeeToVault(uint256 price) internal {
+        wrappedNative.deposit{ value: price }();
+        wrappedNative.transfer(auditorsVault, price);
     }
 
     function _refundUser(uint256 neededAmount) internal {
