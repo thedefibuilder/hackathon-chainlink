@@ -7,6 +7,12 @@ string constant AUDIT_REQUEST_SOURCE_CODE =
     "const characterId = args[0];const apiResponse = await Functions.makeHttpRequest({"
     "url: `https://swapi.info/api/people/${characterId}/`" "});" "if (apiResponse.error) {"
     "throw Error('Request failed');" "}" "const { data } = apiResponse;" "return Functions.encodeString(data.name);";
+
+string constant SUBMIT_VULN_REQUEST_SOURCE_CODE =
+    "const characterId = args[0];const apiResponse = await Functions.makeHttpRequest({"
+    "url: `https://swapi.info/api/people/${characterId}/`" "});" "if (apiResponse.error) {"
+    "throw Error('Request failed');" "}" "const { data } = apiResponse;" "return Functions.encodeString(data.name);";
+
 uint32 constant GAS_LIMIT = 300_000;
 
 // Hardcoded for Avalanche Fuji C-Chain
