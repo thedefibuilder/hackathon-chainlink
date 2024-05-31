@@ -7,8 +7,9 @@ import { ERC721URIStorage } from "@oz/token/ERC721/extensions/ERC721URIStorage.s
 import { ERC721Enumerable } from "@oz/token/ERC721/extensions/ERC721Enumerable.sol";
 import { FunctionsClient } from "@chainlink/functions/v1_0_0/FunctionsClient.sol";
 import { FunctionsRequest } from "@chainlink/functions/v1_0_0/libraries/FunctionsRequest.sol";
-import { AggregatorV3Interface } from "@chainlink/shared/interfaces/AggregatorV3Interface.sol";
 
+// solhint-disable-next-line no-global-import
+import "src/Constants.sol";
 import { WrappedNative } from "src/WrappedNative.sol";
 
 contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
@@ -37,24 +38,6 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
     address payable public immutable auditorsVault;
     WrappedNative public immutable wrappedNative;
     mapping(bytes32 requestId => RequestData data) public requests;
-
-    // TODO: convert constants to separate file
-    string private constant source =
-        "const characterId = args[0];const apiResponse = await Functions.makeHttpRequest({"
-        "url: `https://swapi.info/api/people/${characterId}/`" "});" "if (apiResponse.error) {"
-        "throw Error('Request failed');" "}" "const { data } = apiResponse;" "return Functions.encodeString(data.name);";
-    uint32 private constant gasLimit = 300_000;
-    // Hardcoded for Avalanche Fuji C-Chain
-    AggregatorV3Interface public constant avaxUsdPriceFeed =
-        AggregatorV3Interface(0x5498BB86BC934c8D34FDA08E81D444153d0D06aD);
-    uint40 private constant priceFeedHeartbeat = 600 seconds;
-    bytes32 private constant donId = 0x66756e2d6176616c616e6368652d66756a692d31000000000000000000000000;
-    address private constant functionsRouter = 0xA9d587a00A31A52Ed70D6026794a8FC5E2F5dCb0;
-    uint64 private constant subscriptionId = 8706;
-    uint8 private constant priceFeedDecimals = 8;
-    uint8 private constant nativeTokenDecimals = 18;
-    uint256 private constant unitDifference = 10 ** nativeTokenDecimals - 10 ** priceFeedDecimals;
-    uint256 private constant nativeTokenUnit = 10 ** nativeTokenDecimals;
 
     constructor(
         address vault,
@@ -134,7 +117,7 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
 
     function _sendAuditRequest(string calldata contractURI) internal returns (bytes32 requestId) {
         FunctionsRequest.Request memory req;
-        req.initializeRequestForInlineJavaScript(source);
+        req.initializeRequestForInlineJavaScript(sendAuditRequestSourceCode);
         string[] memory args = new string[](1);
         args[0] = contractURI;
         req.setArgs(args);

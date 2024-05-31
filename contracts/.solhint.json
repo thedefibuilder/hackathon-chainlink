@@ -9,6 +9,8 @@
     "named-parameters-mapping": "warn",
     "no-console": "off",
     "not-rely-on-time": "off",
-    "one-contract-per-file": "off"
+    "one-contract-per-file": "off",
+    "immutable-vars-naming": "off",
+    "const-name-snakecase": "off"
   }
 }
