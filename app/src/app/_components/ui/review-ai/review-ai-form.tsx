@@ -47,7 +47,6 @@ export default function ReviewAiForm() {
       parseInt(rewardHigh.toString()) +
       parseInt(rewardMedium.toString()) +
       parseInt(rewardLow.toString());
-    console.log(sum);
     return sum;
   };
 

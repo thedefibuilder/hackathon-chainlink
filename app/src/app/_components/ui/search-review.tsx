@@ -22,7 +22,7 @@ export default function SearchReview() {
     console.log(data);
   };
   const search = watch("search");
-  console.log(search);
+
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="flex items-end gap-2">

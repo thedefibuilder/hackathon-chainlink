@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
-import type { Chain } from 'viem';
+import type { Chain } from "viem";
 
-import ListItem from './list-item';
+import ListItem from "./list-item";
 
 type TChainsList = {
   title: string;
@@ -23,13 +23,13 @@ export default function ChainsList({
   isSwitchPending,
   isSwitchError,
   chainsList,
-  onSwitchChain
+  onSwitchChain,
 }: TChainsList) {
   return (
-    <div className='flex flex-col gap-y-1.5'>
-      <h3>{title}</h3>
+    <div className="flex flex-col gap-y-1.5">
+      <h3 className="text-xl text-primary-purpleMedium">{title}</h3>
 
-      <ul className='flex flex-col gap-y-2.5 pl-1.5'>
+      <ul className="flex flex-col gap-y-2.5 pl-1.5">
         {chainsList.map((chain) => (
           <ListItem
             key={chain.id}

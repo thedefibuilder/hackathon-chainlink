@@ -73,9 +73,9 @@ export default function QRCodeDialog({
         <Image
           src={base64QRCode}
           alt="Address QR Code"
-          width={480}
-          height={480}
-          className="w-[30rem] rounded-md"
+          width={450}
+          height={450}
+          className="w-[26rem] rounded-md"
         />
       </div>
     </ForwardedDialog>

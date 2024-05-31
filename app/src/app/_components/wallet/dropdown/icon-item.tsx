@@ -14,7 +14,7 @@ type TIconItem = {
 
 export default function IconItem({ icon: Icon, text, className }: TIconItem) {
   return (
-    <div className={cn("flex items-center gap-x-2.5", className)}>
+    <div className={cn("flex items-center gap-x-2.5 text-xl", className)}>
       <Icon size={17} />
       <span>{text}</span>
     </div>

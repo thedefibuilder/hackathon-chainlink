@@ -42,7 +42,9 @@ function _Dialog(
         </DropdownMenuItem>
       </DialogTrigger>
       <DialogPortal>
-        <DialogContent>{contentChildren}</DialogContent>
+        <DialogContent className="bg-dark-darkMain text-textLight">
+          {contentChildren}
+        </DialogContent>
       </DialogPortal>
     </Dialog>
   );

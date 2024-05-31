@@ -15,7 +15,10 @@ export default function SuccessToastContent({
   ...otherProperties
 }: TSuccessToastContent) {
   return (
-    <div className={cn("h-full w-full", className)} {...otherProperties}>
+    <div
+      className={cn("h-full w-full text-xl", className)}
+      {...otherProperties}
+    >
       {successText}
       <span className="absolute bottom-0 left-0 h-2 w-full bg-green-400" />
     </div>
