@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-dark-darkMain px-24 text-white">
       <div className="h-8" />
-      <div className="bg-landingpage-gradient rounded-b-[32px] px-20 ">
+      <div className="rounded-b-[32px] bg-landingpage-gradient px-20 ">
         <div className="h-6" />
 
         <div className="flex w-full items-center justify-between">
@@ -29,7 +29,7 @@ export default function Home() {
               <p>Deployed by You</p>
             </div>
             <div className="h-8" />
-            <Link href="">
+            <Link href="/audit">
               <Button className="border-gradient rounded-lg px-8 py-3 text-2xl">
                 Audit Your Smart Contract
               </Button>

@@ -13,6 +13,8 @@ import {
 import Button from "../../ui/button";
 import DynamicFallback from "./dynamic-fallback";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
+import { signInWithGithub } from "lib/github-sign-in";
+import { useSession } from "next-auth/react";
 
 const CopyAddress = dynamic(() => import("./actions/copy-address"), {
   loading: () => <DynamicFallback />,
@@ -51,8 +53,8 @@ const Network = dynamic(() => import("./details/network"), {
 });
 
 export default function WalletDropdown() {
-  // todo: get from next auth
-  const isGithubConnected = false;
+  const { data, status } = useSession();
+  const { isConnected: isWalletConnected } = useAccount();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isQRCodeDialogOpen, setIsQRCodeDialogOpen] = useState(false);
   const [isSwitchNetworkDialogOpen, setIsSwitchNetworkDialogOpen] =
@@ -66,6 +68,10 @@ export default function WalletDropdown() {
     () => `${address?.slice(0, 8)}...${address?.slice(-8)}`,
     [address],
   );
+  const isConnected = useMemo(
+    () => status === "authenticated" && isWalletConnected && data?.user,
+    [status, data, isWalletConnected],
+  );
 
   function handleDropdownItemSelect() {
     focusReference.current = dropdownTriggerReference.current;
@@ -78,10 +84,14 @@ export default function WalletDropdown() {
       onOpenChange={setIsDropdownOpen}
     >
       <DropdownMenuTrigger asChild>
-        <Avatar>
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>0x</AvatarFallback>
-        </Avatar>
+        {isConnected && (
+          <Avatar>
+            <AvatarImage
+              src={data?.user.image ?? "https://github.com/shadcn.png"}
+            />
+            <AvatarFallback>0x</AvatarFallback>
+          </Avatar>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent
         className="w-56 border-primary-purpleMedium bg-dark-darkMain text-textLight"
@@ -96,13 +106,16 @@ export default function WalletDropdown() {
         }}
       >
         <div className="h-4" />
-        {isGithubConnected ? (
+        {isConnected ? (
           <DropdownMenuLabel className="border-b border-primary-purpleMedium pb-2 text-2xl">
-            Roland Flavius
+            {data?.user.name ?? displayAddress}
           </DropdownMenuLabel>
         ) : (
           <div className="flex items-center justify-center ">
-            <Button className="w-full rounded-full bg-primary-green px-4 py-1 text-xl font-bold text-dark-darkMain">
+            <Button
+              className="w-full rounded-full bg-primary-green px-4 py-1 text-xl font-bold text-dark-darkMain"
+              onClick={signInWithGithub}
+            >
               Connect Github
             </Button>
           </div>
