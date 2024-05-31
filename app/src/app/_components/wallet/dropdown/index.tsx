@@ -13,6 +13,7 @@ import {
 import Button from "../../ui/button";
 import DynamicFallback from "./dynamic-fallback";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
+import { signInWithGithub } from "lib/github-sign-in";
 
 const CopyAddress = dynamic(() => import("./actions/copy-address"), {
   loading: () => <DynamicFallback />,
@@ -102,7 +103,10 @@ export default function WalletDropdown() {
           </DropdownMenuLabel>
         ) : (
           <div className="flex items-center justify-center ">
-            <Button className="w-full rounded-full bg-primary-green px-4 py-1 text-xl font-bold text-dark-darkMain">
+            <Button
+              className="w-full rounded-full bg-primary-green px-4 py-1 text-xl font-bold text-dark-darkMain"
+              onClick={signInWithGithub}
+            >
               Connect Github
             </Button>
           </div>
