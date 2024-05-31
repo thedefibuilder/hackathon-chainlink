@@ -4,12 +4,13 @@ import Button from "./_components/ui/button";
 import DescriptionCard from "./_components/ui/description-card";
 import HomeBanner from "./_components/ui/home-banner";
 import { homeBannerData } from "content";
+import "@rainbow-me/rainbowkit/styles.css";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-dark-darkMain px-24 text-white">
       <div className="h-8" />
-      <div className="rounded-b-[32px] bg-custom-gradient px-20 ">
+      <div className="bg-landingpage-gradient rounded-b-[32px] px-20 ">
         <div className="h-6" />
 
         <div className="flex w-full items-center justify-between">
@@ -22,7 +23,7 @@ export default function Home() {
               height={162}
             />
             <div className="h-2" />
-            <div className="pl-24 text-[40px] font-semibold text-white">
+            <div className="pl-40 text-[40px] font-semibold text-white">
               <p>Audited by AI</p>
               <p>Reviewed by Humans</p>
               <p>Deployed by You</p>
@@ -35,6 +36,8 @@ export default function Home() {
             </Link>
           </div>
           <div className="w-1/2">
+            <div className="h-6" />
+
             <Image
               className="h-full w-full"
               src="/floating_macbook.png"

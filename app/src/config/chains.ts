@@ -21,12 +21,12 @@ export const chainsConfig: TChain[] = [
     network: arbitrumSepolia,
   },
   {
-    name: "BNB Chain Testnet",
+    name: "Binance Smart Chain Testnet",
     logo: "https://pbs.twimg.com/profile_images/1565354861616832513/ovh5FyDN_400x400.png",
     network: bscTestnet,
   },
   {
-    name: "Ethereum Sepolia",
+    name: "Sepolia",
     logo: "https://seeklogo.com/images/E/ethereum-logo-EC6CDBA45B-seeklogo.com.png",
     network: sepolia,
   },
@@ -36,7 +36,7 @@ export const chainsConfig: TChain[] = [
     network: gnosisChiado,
   },
   {
-    name: "Linea Goerli",
+    name: "Linea Goerli Testnet",
     logo: "https://pbs.twimg.com/profile_images/1639402103486521344/erDLnbwE_400x400.jpg",
     network: lineaTestnet,
   },

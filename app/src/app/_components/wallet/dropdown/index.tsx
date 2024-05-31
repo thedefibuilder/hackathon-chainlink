@@ -72,7 +72,11 @@ export default function WalletDropdown() {
   }
 
   return (
-    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+    <DropdownMenu
+      modal={false}
+      open={isDropdownOpen}
+      onOpenChange={setIsDropdownOpen}
+    >
       <DropdownMenuTrigger asChild>
         <Avatar>
           <AvatarImage src="https://github.com/shadcn.png" />
@@ -91,14 +95,17 @@ export default function WalletDropdown() {
           }
         }}
       >
+        <div className="h-4" />
         {isGithubConnected ? (
           <DropdownMenuLabel className="border-b border-primary-purpleMedium pb-2 text-2xl">
             Roland Flavius
           </DropdownMenuLabel>
         ) : (
-          <Button className="rounded-full bg-primary-green px-4 py-1 font-bold text-dark-darkMain">
-            Connect Github
-          </Button>
+          <div className="flex items-center justify-center ">
+            <Button className="w-full rounded-full bg-primary-green px-4 py-1 text-xl font-bold text-dark-darkMain">
+              Connect Github
+            </Button>
+          </div>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -107,7 +114,7 @@ export default function WalletDropdown() {
           <Network />
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-2xl">Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <Faucet />

@@ -9,9 +9,9 @@ import SuccessToastContent from "@/app/_components/toast/success-toast-content";
 import { DialogHeader, DialogTitle } from "@/app/_components/ui/dialog";
 import { useToast } from "@/app/_components/toast/use-toast";
 
-import ForwardedDialog from "..";
 import IconDropdownMenuItem from "../../../icon-item";
 import ChainsList from "./chains-list";
+import ForwardedDialog from "../index";
 
 type TSwitchNetworkDialog = {
   isDialogOpen?: boolean;
@@ -117,7 +117,7 @@ export default function SwitchNetworkDialog({
       </DialogHeader>
 
       <div className="flex flex-col gap-y-3">
-        <ChainsList
+        {/* <ChainsList
           title="Mainnet"
           activeChainId={activeChainId}
           pendingChainId={variables?.chainId ?? 0}
@@ -125,7 +125,7 @@ export default function SwitchNetworkDialog({
           isSwitchError={isError}
           chainsList={mainnetChains}
           onSwitchChain={onSwitchChain}
-        />
+        /> */}
 
         <ChainsList
           title="Testnet"

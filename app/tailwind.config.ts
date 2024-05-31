@@ -46,6 +46,8 @@ const config: Config = {
       },
       backgroundImage: {
         "custom-gradient": "linear-gradient(to bottom, #0f001b, #1c0330)",
+        "landingpage-gradient":
+          "linear-gradient(135deg, rgba(15, 0, 27, 0) 50%, rgba(250, 127, 255, 0.5) 180%), linear-gradient(to top, rgba(28, 3, 48, 1) 0%, rgb(0, 0, 27) 100%)",
         "toright-gradient": "linear-gradient(to right, #0f001b, #1c0330)",
         "deploy-card-gradient": "linear-gradient(to bottom, #0f001b, #1c0330)",
         "red-gradient": "linear-gradient(to right, #671213, #13011a)",

@@ -16,7 +16,10 @@ export default function Label({
   ...otherProperties
 }: TLabel) {
   return (
-    <div className={cn("flex justify-between", className)} {...otherProperties}>
+    <div
+      className={cn("flex justify-between text-lg", className)}
+      {...otherProperties}
+    >
       <span className="text-muted-foreground">{property}</span>
       <span>{value}</span>
     </div>
