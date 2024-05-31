@@ -16,7 +16,7 @@ contract AuditorsVault is ERC4626, FunctionsClient {
     constructor(address wrappedNative)
         ERC4626(IERC20(wrappedNative))
         ERC20("Auditors Guild", "GUILD")
-        FunctionsClient(functionsRouter)
+        FunctionsClient(FUNCTIONS_ROUTER)
     {
         // solhint-disable-previous-line no-empty-blocks
     }

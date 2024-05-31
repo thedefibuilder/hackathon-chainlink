@@ -10,7 +10,6 @@ import { FunctionsRequest } from "@chainlink/functions/v1_0_0/libraries/Function
 
 import "src/Constants.sol";
 import { WrappedNative } from "src/WrappedNative.sol";
-import { AuditorsVault } from "src/AuditorsVault.sol";
 
 contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
     using FunctionsRequest for FunctionsRequest.Request;
@@ -44,7 +43,7 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
         WrappedNative wNative
     )
         ERC721("DeFi Builder AI", "BUILD")
-        FunctionsClient(functionsRouter)
+        FunctionsClient(FUNCTIONS_ROUTER)
     {
         auditorsVault = vault;
         wrappedNative = wNative;
@@ -110,18 +109,18 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
     }
 
     function calculateAuditPriceInNative() public view returns (uint256) {
-        (, int256 answer,, uint256 updatedAt,) = avaxUsdPriceFeed.latestRoundData();
-        if (answer <= 0 || updatedAt + priceFeedHeartbeat < block.timestamp) revert PriceFetchFailed();
-        return generationFeeInUSD * uint256(answer) * unitDifference / nativeTokenUnit;
+        (, int256 answer,, uint256 updatedAt,) = AVAX_USD_PRICE_FEED.latestRoundData();
+        if (answer <= 0 || updatedAt + PRICE_FEED_HEARTBEAT < block.timestamp) revert PriceFetchFailed();
+        return generationFeeInUSD * uint256(answer) * UNIT_DIFFERENCE / NATIVE_TOKEN_UNIT;
     }
 
     function _sendAuditRequest(string calldata contractURI) internal returns (bytes32 requestId) {
         FunctionsRequest.Request memory req;
-        req.initializeRequestForInlineJavaScript(sendAuditRequestSourceCode);
+        req.initializeRequestForInlineJavaScript(AUDIT_REQUEST_SOURCE_CODE);
         string[] memory args = new string[](1);
         args[0] = contractURI;
         req.setArgs(args);
-        requestId = _sendRequest(req.encodeCBOR(), subscriptionId, gasLimit, donId);
+        requestId = _sendRequest(req.encodeCBOR(), SUBSCRIPTION_ID, GAS_LIMIT, DON_ID);
     }
 
     function _sendFeeToVault(uint256 price) internal {
