@@ -8,9 +8,9 @@ import { ERC721Enumerable } from "@oz/token/ERC721/extensions/ERC721Enumerable.s
 import { FunctionsClient } from "@chainlink/functions/v1_0_0/FunctionsClient.sol";
 import { FunctionsRequest } from "@chainlink/functions/v1_0_0/libraries/FunctionsRequest.sol";
 
-// solhint-disable-next-line no-global-import
 import "src/Constants.sol";
 import { WrappedNative } from "src/WrappedNative.sol";
+import { AuditorsVault } from "src/AuditorsVault.sol";
 
 contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
     using FunctionsRequest for FunctionsRequest.Request;
@@ -24,8 +24,8 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
     error InvalidTokenId();
     error InvalidRequestId();
 
-    event AuditorRequestError(bytes32 requestId, string error);
-    event AuditorRequestSuccess(bytes32 requestId, bytes response);
+    event AuditRequestError(bytes32 requestId, string error);
+    event AuditRequestSuccess(bytes32 requestId, bytes response);
 
     struct RequestData {
         address owner;
@@ -35,7 +35,7 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
 
     // 1.337 USD per generation
     uint256 public constant generationFeeInUSD = 1.337e8;
-    address payable public immutable auditorsVault;
+    address public immutable auditorsVault;
     WrappedNative public immutable wrappedNative;
     mapping(bytes32 requestId => RequestData data) public requests;
 
@@ -46,7 +46,7 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
         ERC721("DeFi Builder AI", "BUILD")
         FunctionsClient(functionsRouter)
     {
-        auditorsVault = payable(vault);
+        auditorsVault = vault;
         wrappedNative = wNative;
     }
 
@@ -93,13 +93,13 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
 
     function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
         if (err.length > 0) {
-            emit AuditorRequestError(requestId, string(err));
+            emit AuditRequestError(requestId, string(err));
             return;
         }
         RequestData storage data = requests[requestId];
         if (data.tokenId == 0) revert InvalidRequestId();
 
-        emit AuditorRequestSuccess(requestId, response);
+        emit AuditRequestSuccess(requestId, response);
 
         _setTokenURI(data.tokenId, string(response));
 

@@ -11,6 +11,7 @@
     "not-rely-on-time": "off",
     "one-contract-per-file": "off",
     "immutable-vars-naming": "off",
-    "const-name-snakecase": "off"
+    "const-name-snakecase": "off",
+    "no-global-import": "off"
   }
 }
