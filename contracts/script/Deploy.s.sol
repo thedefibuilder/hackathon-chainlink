@@ -7,7 +7,8 @@ import { console2 } from "forge-std/src/console2.sol";
 
 contract Deploy is BaseScript {
     function run() public broadcast {
-        AuditRegistry registry = new AuditRegistry();
+        address vault = 0x1234567890123456789012345678901234567890;
+        AuditRegistry registry = new AuditRegistry(vault);
 
         console2.log("Deployed AuditRegistry at address: {}", address(registry));
     }
