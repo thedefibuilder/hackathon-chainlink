@@ -28,6 +28,7 @@ export default function RootLayout({
           <NextAuthProvider>
             <TRPCReactProvider>
               <Header />
+              <div className="h-8" />
 
               {children}
 
