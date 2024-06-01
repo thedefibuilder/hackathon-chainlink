@@ -3,7 +3,10 @@ import { z } from "zod";
 export const SmartContractSchema = z.object({
   id: z.number().optional(),
   title: z.string().min(3, "Title is requierd"),
-  authorName: z.string().min(3, "The author name is requierd"),
+  repoLink: z.string().min(3, "Repo link is requierd"),
+  filesInScope: z.array(z.string()).min(1, "Files in scope is requierd"),
+  tags: z.array(z.string()),
+  categories: z.array(z.string()),
 });
 
 export const ReviewAISchema = z.object({

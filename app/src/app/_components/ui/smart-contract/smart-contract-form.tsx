@@ -6,19 +6,31 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { SmartContractSchema } from "types/schema";
 import { Input } from "../Input";
+import { api } from "@/trpc/react";
+import ButtonSpinner from "../../ButtonSpinner";
 
 export default function SmartContractForm() {
+  const sendRequest = api.audit.createRequest.useMutation();
+
   const {
     handleSubmit,
     formState: { errors },
     register,
   } = useForm<z.infer<typeof SmartContractSchema>>({
     resolver: zodResolver(SmartContractSchema),
-    defaultValues: {},
+    // Mock Values, please change later !!!
+    defaultValues: {
+      title: "Bombaclat Smart Contract",
+      repoLink: "github.com/bombaclat",
+      filesInScope: ["bombaclat.sol"],
+      tags: ["bombaclat", "smart contract"],
+      categories: ["bombaclat"],
+    },
   });
   const onSubmit = (data: z.infer<typeof SmartContractSchema>) => {
-    console.log(data);
+    sendRequest.mutate(data);
   };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex gap-6">
       <div className="w-full">
@@ -35,9 +47,9 @@ export default function SmartContractForm() {
           <div className="w-[40%]">
             <Input
               type="text"
-              placeholder="Give it an author name"
-              {...register("authorName")}
-              error={errors.authorName?.message}
+              placeholder="Repository Link"
+              {...register("repoLink")}
+              error={errors.repoLink?.message}
               className="w-full "
               iconLeft={
                 <Image
@@ -69,9 +81,12 @@ export default function SmartContractForm() {
           Deliver safer code, and get audited in seconds with data rich AI.
         </p>
 
-        <Button className="w-full rounded-lg bg-primary-green px-4 py-2 text-2xl font-bold text-dark-darkMain">
-          Audit my Smart Contract
-        </Button>
+        <ButtonSpinner
+          isLoading={sendRequest.isPending}
+          defaultContent="Audit My Smart Contract"
+          loadingContent="Loading..."
+          className="w-full rounded-lg bg-primary-green px-4 py-2 text-2xl font-bold text-dark-darkMain"
+        />
       </div>
     </form>
   );
