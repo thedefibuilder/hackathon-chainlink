@@ -1,4 +1,4 @@
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 
 export function signInWithGithub() {
   signIn("github")
@@ -8,4 +8,8 @@ export function signInWithGithub() {
     .catch((error) => {
       console.error("GitHub Sign In Error", error);
     });
+}
+
+export function signOutFromGithub() {
+  signOut({ callbackUrl: "/" });
 }

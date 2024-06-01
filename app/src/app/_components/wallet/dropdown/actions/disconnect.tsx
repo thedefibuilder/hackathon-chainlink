@@ -7,6 +7,7 @@ import { useDisconnect } from "wagmi";
 
 import IconItem from "../icon-item";
 import { DropdownMenuItem } from "@/app/_components/ui/drop-down";
+import { signOutFromGithub } from "lib/github-sign-in";
 
 export default function Disconnect() {
   const { disconnect } = useDisconnect();
@@ -14,7 +15,10 @@ export default function Disconnect() {
   return (
     <DropdownMenuItem
       className="text-destructive hover:!bg-destructive hover:text-destructive-foreground focus:!bg-destructive focus:text-destructive-foreground"
-      onClick={() => disconnect()}
+      onClick={() => {
+        disconnect();
+        signOutFromGithub();
+      }}
     >
       <IconItem icon={LogOut} text="Disconnect" />
     </DropdownMenuItem>

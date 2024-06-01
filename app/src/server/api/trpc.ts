@@ -29,16 +29,21 @@ import { Octokit } from "octokit";
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const session = await getServerAuthSession();
-  const accessToken = await db.account.findUnique({
-    where: { id: session?.user.id },
-    select: { access_token: true },
-  });
-  const octokit = new Octokit({ auth: accessToken });
+  let octokit: Octokit | undefined;
+
+  if (session?.user.id) {
+    const { access_token: accessToken } = await db.account.findFirstOrThrow({
+      where: { userId: session.user.id },
+      select: { access_token: true },
+    });
+    console.log("access token COAE", accessToken);
+    octokit = new Octokit({ auth: accessToken });
+  }
 
   return {
     db,
     session,
-    githubApi: octokit.rest,
+    githubApi: octokit?.rest,
     ...opts,
   };
 };

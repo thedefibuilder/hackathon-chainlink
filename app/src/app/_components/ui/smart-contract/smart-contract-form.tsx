@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import Button from "../button";
 import { type z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -8,9 +7,16 @@ import { SmartContractSchema } from "types/schema";
 import { Input } from "../Input";
 import { api } from "@/trpc/react";
 import ButtonSpinner from "../../ButtonSpinner";
+import { useEffect } from "react";
+import FileSelectTable from "./file-select-table";
 
 export default function SmartContractForm() {
   const sendRequest = api.audit.createRequest.useMutation();
+  const getRepos = api.github.getUserRepos.useQuery();
+
+  useEffect(() => {
+    console.log("get Repos fetch ", getRepos.data);
+  }, [getRepos.data]);
 
   const {
     handleSubmit,
@@ -64,7 +70,12 @@ export default function SmartContractForm() {
         </div>
         <div className="h-6" />
         <div className="rounded-b-[32px] bg-custom-gradient px-6">
-          wip
+          {getRepos.isFetched && getRepos.data && (
+            <FileSelectTable
+              repoOwner={getRepos.data[0]!.owner}
+              repoName={getRepos.data[0]!.name}
+            />
+          )}
           <div className="h-40"></div>
           <div className="h-28"></div>
         </div>
