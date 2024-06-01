@@ -69,8 +69,8 @@ export default function WalletDropdown() {
     [address],
   );
   const isConnected = useMemo(
-    () => status === "authenticated" && isWalletConnected && data?.user,
-    [status, data, isWalletConnected],
+    () => status === "authenticated" && isWalletConnected,
+    [status, isWalletConnected],
   );
 
   function handleDropdownItemSelect() {
@@ -84,14 +84,12 @@ export default function WalletDropdown() {
       onOpenChange={setIsDropdownOpen}
     >
       <DropdownMenuTrigger asChild>
-        {isConnected && (
-          <Avatar>
-            <AvatarImage
-              src={data?.user.image ?? "https://github.com/shadcn.png"}
-            />
-            <AvatarFallback>0x</AvatarFallback>
-          </Avatar>
-        )}
+        <Avatar>
+          <AvatarImage
+            src={data?.user.image ?? "https://github.com/shadcn.png"}
+          />
+          <AvatarFallback>0x</AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         className="w-56 border-primary-purpleMedium bg-dark-darkMain text-textLight"
