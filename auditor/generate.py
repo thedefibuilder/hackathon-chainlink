@@ -2,19 +2,13 @@ from pymongo import MongoClient
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import VectorStore
 from langchain_mongodb import MongoDBAtlasVectorSearch
-from langchain_core.prompts import PipelinePromptTemplate, PromptTemplate
 from langchain_core.pydantic_v1 import BaseModel, Field
 from enum import Enum
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from langchain_community.llms import openai
-from langchain.chains import retrieval_qa
+from langchain_core.messages import HumanMessage, SystemMessage
 import os
 from dotenv import load_dotenv, find_dotenv
-import utils
 from utils import logger, ATLAS_DB_URI
-from pathlib import Path
 import tiktoken
-from langchain_core.documents import Document
 load_dotenv(find_dotenv())
 '''
 This module will provide functions that will allow us to query our vector 
@@ -47,6 +41,7 @@ class VulnerabilityAuditReport(BaseModel):
     severity:Severity = Field(description="The severity of the vulnerability, accepts values: high, medium, low")
     title:str = Field(description="Give the discovered vulnerability a title, this can be a single sentence summary of the vulnerability")
     recommendation:str = Field(description="Recommended remedial action to fix code vulnerabilities")
+    certainty_score:int = Field(description="A score between 0-100 that determines how sure we are of the vulnerability being corrent and applicable")
 
 class FunctionAuditReport(BaseModel):
     function_code:str = Field(description="Function code")
@@ -54,7 +49,7 @@ class FunctionAuditReport(BaseModel):
 
 
 def object_similarity_search(
-        object, 
+        search_object, 
         k=5, 
         model="text-embedding-3-small", 
         db_name=os.environ.get("ATLAS_DB_DBNAME"),
@@ -75,7 +70,10 @@ def object_similarity_search(
         embedding=embeddings
     )
 
-    results = vector_search.similarity_search_with_relevance_scores(object, k=k)
+    results = vector_search.similarity_search_with_relevance_scores(
+        search_object, 
+        k=k
+    )
 
     return results
 
@@ -246,6 +244,16 @@ def generate_function_audit(user_function) -> FunctionAuditReport:
     
     func_vuln = discover_function_vulnerabilites(user_function=user_function)
     
+    scores = object_similarity_search(
+        user_function,
+        db_name="code_snippets",
+        collection_name="v1"
+    )
+    scores = [score[1] for score in scores]
+    # Do something with the score
+    certainty_score = (sum(scores)/len(scores))*100
+    certainty_score = certainty_score if certainty_score < 100 else 100
+
     for vuln in func_vuln.vulnerabilites:
         vuln_recommendation = generate_recommendations(
             user_function=user_function, 
@@ -258,13 +266,33 @@ def generate_function_audit(user_function) -> FunctionAuditReport:
             detail=vuln.detail,
             severity=vuln.severity,
             title=vuln.title,
-            recommendation=vuln_recommendation.recommendation
+            recommendation=vuln_recommendation.recommendation,
+            certainty_score=certainty_score
         ))
 
     return FunctionAuditReport(
         function_code=user_function,
         vulnerabilities=vulnerabilites
     )
+
+def check_distance(search_object, db_name, collection):
+    """
+    Embed the vectors and check the distance of the vectors to nearest neighbours
+    """
+    logger.info("Getting distance to nearest vectors")
+    scores = object_similarity_search(
+        search_object,
+        db_name=db_name,
+        collection_name=collection
+    )
+    
+    scores = [score[1] for score in scores]
+    logger.debug(f"Distance to nearest vectors is {[s for s in scores]}")
+    ave = sum(scores) / len(scores)
+    if ave < 1:
+        return (1 - ave)*100
+    else:
+        return 100
 
 if __name__ == "__main__":
     code = "function verify(\n    bytes calldata inputTxBytes,\n    uint16 outputIndex,\n    uint256 inputTxPos,\n    bytes calldata spendingTxBytes,\n    uint16 inputIndex,\n    bytes calldata signature,\n    bytes calldata /\\*optionalArgs\\*/\n)\n    external\n    view\n    returns (bool)\n{\n    PaymentTransactionModel.Transaction memory inputTx = PaymentTransactionModel.decode(inputTxBytes);\n    require(inputTx.txType == supportInputTxType, \"Input tx is an unsupported payment tx type\");\n\n    PaymentTransactionModel.Transaction memory spendingTx = PaymentTransactionModel.decode(spendingTxBytes);\n    require(spendingTx.txType == supportSpendingTxType, \"The spending tx is an unsupported payment tx type\");\n\n    UtxoPosLib.UtxoPos memory utxoPos = UtxoPosLib.build(TxPosLib.TxPos(inputTxPos), outputIndex);\n    require(\n        spendingTx.inputs[inputIndex] == bytes32(utxoPos.value),\n        \"Spending tx points to the incorrect output UTXO position\"\n    );\n\n    address payable owner = inputTx.outputs[outputIndex].owner();\n    require(owner == ECDSA.recover(eip712.hashTx(spendingTx), signature), \"Tx in not signed correctly\");\n\n    return true;\n}\n\n"
@@ -280,4 +308,5 @@ if __name__ == "__main__":
     #print(create_recommendation_prompt(code, vulnerability))
 
     #print(generate_recommendations(code, vulnerability))
-    print(generate_function_audit(code))
+    #print(generate_function_audit(code))
+    print(check_distance(vulnerability))
