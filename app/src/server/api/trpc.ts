@@ -36,7 +36,6 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
       where: { userId: session.user.id },
       select: { access_token: true },
     });
-    console.log("access token COAE", accessToken);
     octokit = new Octokit({ auth: accessToken });
   }
 
