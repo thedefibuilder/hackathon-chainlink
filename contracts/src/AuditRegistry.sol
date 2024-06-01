@@ -1,23 +1,30 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25;
 
+import { Address } from "@oz/utils/Address.sol";
 import { ERC721 } from "@oz/token/ERC721/ERC721.sol";
 import { ERC721URIStorage } from "@oz/token/ERC721/extensions/ERC721URIStorage.sol";
 import { ERC721Enumerable } from "@oz/token/ERC721/extensions/ERC721Enumerable.sol";
 import { FunctionsClient } from "@chainlink/functions/v1_0_0/FunctionsClient.sol";
 import { FunctionsRequest } from "@chainlink/functions/v1_0_0/libraries/FunctionsRequest.sol";
 
+import "src/Constants.sol";
+import { WrappedNative } from "src/WrappedNative.sol";
+
 contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
     using FunctionsRequest for FunctionsRequest.Request;
+    using Address for address payable;
 
     error NotOwner();
     error AlreadyExists();
+    error PriceFetchFailed();
+    error InsufficientFee();
     error InvalidArgsLength();
     error InvalidTokenId();
     error InvalidRequestId();
 
-    event AuditorRequestError(bytes32 requestId, string error);
-    event AuditorRequestSuccess(bytes32 requestId, bytes response);
+    event AuditRequestError(bytes32 requestId, string error);
+    event AuditRequestSuccess(bytes32 requestId, bytes response);
 
     struct RequestData {
         address owner;
@@ -25,48 +32,73 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
         string contractURI;
     }
 
+    // 1.337 USD per generation
+    uint256 public constant generationFeeInUSD = 1.337e8;
+    address public immutable auditorsVault;
+    WrappedNative public immutable wrappedNative;
     mapping(bytes32 requestId => RequestData data) public requests;
 
-    string private constant source =
-        "const characterId = args[0];const apiResponse = await Functions.makeHttpRequest({"
-        "url: `https://swapi.info/api/people/${characterId}/`" "});" "if (apiResponse.error) {"
-        "throw Error('Request failed');" "}" "const { data } = apiResponse;" "return Functions.encodeString(data.name);";
-    uint32 private constant gasLimit = 300_000;
-    // Hardcoded for Avalanche Fuji C-Chain
-    bytes32 private constant donId = 0x66756e2d6176616c616e6368652d66756a692d31000000000000000000000000;
-    address private constant functionsRouter = 0xA9d587a00A31A52Ed70D6026794a8FC5E2F5dCb0;
-    uint64 private constant subscriptionId = 8706;
-
-    constructor() ERC721("AI Auditor", "AUDIT") FunctionsClient(functionsRouter) {
-        // solhint-disable-previous-line no-empty-blocks
+    constructor(
+        address vault,
+        WrappedNative wNative
+    )
+        ERC721("DeFi Builder AI", "BUILD")
+        FunctionsClient(FUNCTIONS_ROUTER)
+    {
+        auditorsVault = vault;
+        wrappedNative = wNative;
     }
 
-    function requestAuditUpdate(uint256 tokenId, string calldata contractURI) external returns (bytes32 requestId) {
+    function requestAuditUpdate(
+        uint256 tokenId,
+        string calldata contractURI
+    )
+        external
+        payable
+        returns (bytes32 requestId)
+    {
+        uint256 price = calculateAuditPriceInNative();
+        if (msg.value < price) revert InsufficientFee();
         if (msg.sender != _ownerOf(tokenId)) revert NotOwner();
 
         requestId = _sendAuditRequest(contractURI);
 
         requests[requestId] = RequestData(address(0), tokenId, contractURI);
+
+        _refundUser(price);
+        _sendFeeToVault(price);
     }
 
-    function requestNewAudit(uint256 tokenId, string calldata contractURI) external returns (bytes32 requestId) {
+    function requestNewAudit(
+        uint256 tokenId,
+        string calldata contractURI
+    )
+        external
+        payable
+        returns (bytes32 requestId)
+    {
+        uint256 price = calculateAuditPriceInNative();
+        if (msg.value < price) revert InsufficientFee();
         if (tokenId == 0) revert InvalidTokenId();
         if (_ownerOf(tokenId) != address(0)) revert AlreadyExists();
 
         requestId = _sendAuditRequest(contractURI);
 
         requests[requestId] = RequestData(msg.sender, tokenId, contractURI);
+
+        _refundUser(price);
+        _sendFeeToVault(price);
     }
 
     function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
         if (err.length > 0) {
-            emit AuditorRequestError(requestId, string(err));
+            emit AuditRequestError(requestId, string(err));
             return;
         }
         RequestData storage data = requests[requestId];
         if (data.tokenId == 0) revert InvalidRequestId();
 
-        emit AuditorRequestSuccess(requestId, response);
+        emit AuditRequestSuccess(requestId, response);
 
         _setTokenURI(data.tokenId, string(response));
 
@@ -76,13 +108,32 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
         }
     }
 
+    function calculateAuditPriceInNative() public view returns (uint256) {
+        (, int256 answer,, uint256 updatedAt,) = AVAX_USD_PRICE_FEED.latestRoundData();
+        if (answer <= 0 || updatedAt + PRICE_FEED_HEARTBEAT < block.timestamp) revert PriceFetchFailed();
+        return generationFeeInUSD * uint256(answer) * UNIT_DIFFERENCE / NATIVE_TOKEN_UNIT;
+    }
+
     function _sendAuditRequest(string calldata contractURI) internal returns (bytes32 requestId) {
         FunctionsRequest.Request memory req;
-        req.initializeRequestForInlineJavaScript(source);
+        req.initializeRequestForInlineJavaScript(AUDIT_REQUEST_SOURCE_CODE);
         string[] memory args = new string[](1);
         args[0] = contractURI;
         req.setArgs(args);
-        requestId = _sendRequest(req.encodeCBOR(), subscriptionId, gasLimit, donId);
+        requestId = _sendRequest(req.encodeCBOR(), SUBSCRIPTION_ID, GAS_LIMIT, DON_ID);
+    }
+
+    function _sendFeeToVault(uint256 price) internal {
+        wrappedNative.deposit{ value: price }();
+        wrappedNative.transfer(auditorsVault, price);
+    }
+
+    function _refundUser(uint256 neededAmount) internal {
+        if (msg.value > neededAmount) {
+            unchecked {
+                payable(msg.sender).sendValue(msg.value - neededAmount);
+            }
+        }
     }
 
     /**
