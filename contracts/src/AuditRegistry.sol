@@ -2,6 +2,7 @@
 pragma solidity >=0.8.25;
 
 import { Address } from "@oz/utils/Address.sol";
+import { Strings } from "@oz/utils/Strings.sol";
 import { ERC721 } from "@oz/token/ERC721/ERC721.sol";
 import { ERC721URIStorage } from "@oz/token/ERC721/extensions/ERC721URIStorage.sol";
 import { ERC721Enumerable } from "@oz/token/ERC721/extensions/ERC721Enumerable.sol";
@@ -13,30 +14,31 @@ import { WrappedNative } from "src/WrappedNative.sol";
 
 contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
     using FunctionsRequest for FunctionsRequest.Request;
+    using Strings for uint256;
     using Address for address payable;
 
     error NotOwner();
-    error AlreadyExists();
     error PriceFetchFailed();
     error InsufficientFee();
     error InvalidArgsLength();
-    error InvalidTokenId();
     error InvalidRequestId();
 
     event AuditRequestError(bytes32 requestId, string error);
     event AuditRequestSuccess(bytes32 requestId, bytes response);
+    event RewardDeposited(uint256 tokenId, uint256 amount);
 
     struct RequestData {
         address owner;
         uint256 tokenId;
-        string contractURI;
+        uint256 auditRequestId;
     }
 
     // 1.337 USD per generation
     uint256 public constant generationFeeInUSD = 1.337e8;
     address public immutable auditorsVault;
     WrappedNative public immutable wrappedNative;
-    mapping(bytes32 requestId => RequestData data) public requests;
+    mapping(bytes32 functionsRequest => RequestData data) public requests;
+    mapping(uint256 tokenId => uint256 auditRequest) public auditRequests;
 
     constructor(
         address vault,
@@ -49,63 +51,46 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
         wrappedNative = wNative;
     }
 
-    function requestAuditUpdate(
-        uint256 tokenId,
-        string calldata contractURI
-    )
-        external
-        payable
-        returns (bytes32 requestId)
-    {
-        uint256 price = calculateAuditPriceInNative();
-        if (msg.value < price) revert InsufficientFee();
+    function depositReward(uint256 tokenId) external payable {
+        if (msg.value == 0) revert InsufficientFee();
         if (msg.sender != _ownerOf(tokenId)) revert NotOwner();
 
-        requestId = _sendAuditRequest(contractURI);
+        emit RewardDeposited(tokenId, msg.value);
 
-        requests[requestId] = RequestData(address(0), tokenId, contractURI);
-
-        _refundUser(price);
-        _sendFeeToVault(price);
+        // NOTE: The reward should be distributed more securely to the auditors.
+        // But for the sake of simplicity, we just send it directly to the vault.
+        _sendFeeToVault(msg.value);
     }
 
-    function requestNewAudit(
-        uint256 tokenId,
-        string calldata contractURI
-    )
+    function requestAudit(uint256 auditRequestId)
         external
         payable
-        returns (bytes32 requestId)
+        returns (bytes32 functionsRequestId, uint256 tokenId)
     {
         uint256 price = calculateAuditPriceInNative();
         if (msg.value < price) revert InsufficientFee();
-        if (tokenId == 0) revert InvalidTokenId();
-        if (_ownerOf(tokenId) != address(0)) revert AlreadyExists();
 
-        requestId = _sendAuditRequest(contractURI);
-
-        requests[requestId] = RequestData(msg.sender, tokenId, contractURI);
+        tokenId = totalSupply() + 1;
+        functionsRequestId = _sendAuditRequest(auditRequestId);
+        requests[functionsRequestId] = RequestData(msg.sender, tokenId, auditRequestId);
+        auditRequests[tokenId] = auditRequestId;
 
         _refundUser(price);
         _sendFeeToVault(price);
     }
 
-    function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
+    function fulfillRequest(bytes32 functionsRequestId, bytes memory response, bytes memory err) internal override {
         if (err.length > 0) {
-            emit AuditRequestError(requestId, string(err));
+            emit AuditRequestError(functionsRequestId, string(err));
             return;
         }
-        RequestData storage data = requests[requestId];
+        RequestData storage data = requests[functionsRequestId];
         if (data.tokenId == 0) revert InvalidRequestId();
 
-        emit AuditRequestSuccess(requestId, response);
+        emit AuditRequestSuccess(functionsRequestId, response);
 
-        _setTokenURI(data.tokenId, string(response));
-
-        // If this is not an audit update request, mint the token
-        if (data.owner != address(0)) {
-            _safeMint(data.owner, data.tokenId);
-        }
+        _setTokenURI(data.tokenId, string.concat(AUDIT_BASE_URI, data.auditRequestId.toString()));
+        _safeMint(data.owner, data.tokenId);
     }
 
     function calculateAuditPriceInNative() public view returns (uint256) {
@@ -114,11 +99,11 @@ contract AuditRegistry is ERC721URIStorage, ERC721Enumerable, FunctionsClient {
         return generationFeeInUSD * uint256(answer) * UNIT_DIFFERENCE / NATIVE_TOKEN_UNIT;
     }
 
-    function _sendAuditRequest(string calldata contractURI) internal returns (bytes32 requestId) {
+    function _sendAuditRequest(uint256 auditRequestId) internal returns (bytes32 requestId) {
         FunctionsRequest.Request memory req;
         req.initializeRequestForInlineJavaScript(AUDIT_REQUEST_SOURCE_CODE);
         string[] memory args = new string[](1);
-        args[0] = contractURI;
+        args[0] = auditRequestId.toString();
         req.setArgs(args);
         requestId = _sendRequest(req.encodeCBOR(), SUBSCRIPTION_ID, GAS_LIMIT, DON_ID);
     }
