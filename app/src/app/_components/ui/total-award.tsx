@@ -5,7 +5,7 @@ export default function TotalAward() {
     <div className="flex w-full justify-between">
       <div className="w-[35%]">
         <Image
-          src="/coin.png"
+          src="/coin.svg"
           alt="coin"
           width={114}
           height={114}

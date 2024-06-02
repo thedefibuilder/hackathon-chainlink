@@ -40,7 +40,7 @@ export default function Home() {
 
             <Image
               className="h-full w-full"
-              src="/floating_macbook.png"
+              src="/floating_macbook.svg"
               alt="Floating Macbook"
               width={458}
               height={404}

@@ -494,7 +494,7 @@ export const homeBannerData = [
   {
     title: "One AI to Audit Them All",
     text: "Speed-up your dApp development, get suggested changes for your smart contracts, and create rewards for human reviewers.",
-    imageSrc: "/audit-macbook.png",
+    imageSrc: "/audit-macbook.svg",
     link: "/audit",
     linkText: "Audit my Smart Contract",
     isTwoCol: true,
@@ -503,7 +503,7 @@ export const homeBannerData = [
   {
     title: "Human touch always pays",
     text: "Test your skills and review smart contracts audited by AI. Get rewarded for fixing vulnerabilities and get code ready to deploy.",
-    imageSrc: "/review-macbook.png",
+    imageSrc: "/review-macbook.svg",
     link: "/review-ai-audits",
     linkText: "Review Audited Smart Contracts",
     isTwoCol: true,
@@ -514,7 +514,7 @@ export const homeBannerData = [
     text: "Browse smart contracts for all use cases audited by AI and reviewed by Humans",
     secondText:
       "Code ready to deploy on any EVM network, speed up your dApp development",
-    imageSrc: "/deploy-macbook.png",
+    imageSrc: "/deploy-macbook.svg",
     link: "/deploy-browser",
     linkText: "Browse to Deploy",
     align: "textFirst",

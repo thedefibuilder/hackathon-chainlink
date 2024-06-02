@@ -12,7 +12,7 @@ export default function DeployBrowser() {
       <HeroBanner
         title="Deploy Code"
         text="Find and deploy audited and reviewed code."
-        img="/ai-review-exp.png"
+        img="/ai-review-exp.svg"
         imgAlt="Deploy Code Banner"
         imgWidth={260}
         imgHeight={260}

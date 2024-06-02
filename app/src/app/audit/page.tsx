@@ -15,7 +15,7 @@ export default function AuditPage() {
       <HeroBanner
         title="Your AI auditor"
         text="Your Smart Contracts audited in a matter of seconds."
-        img="/auditBanner.png"
+        img="/auditBanner.svg"
         imgAlt="Audit Banner"
         imgWidth={260}
         imgHeight={260}

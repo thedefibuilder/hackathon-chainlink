@@ -9,7 +9,7 @@ export default function ReviewAiAuditsPage() {
       <HeroBanner
         title="Review AI Audits"
         text="Review AI audits, give feedback and get rewarded."
-        img="/ai-review-exp.png"
+        img="/ai-review-exp.svg"
         imgAlt="Review Ai Audits Banner"
         imgWidth={260}
         imgHeight={260}

@@ -55,7 +55,7 @@ export default function ReviewAiForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="relative flex gap-8">
       <Image
-        src="/coin.png"
+        src="/coin.svg"
         alt="coin"
         width={220}
         height={220}
