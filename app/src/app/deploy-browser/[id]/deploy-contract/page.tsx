@@ -7,8 +7,9 @@ import DeployContracCard from "@/app/_components/ui/deploy-contract-card/deploy-
 
 import SectionTitle from "@/app/_components/ui/section-title";
 import SuggestedAccordion from "@/app/_components/ui/suggested-changes/suggested-accordion";
+import SuggestedCard from "@/app/_components/ui/suggested-changes/suggested-card";
 import TotalAward from "@/app/_components/ui/total-award";
-import { deployCardContent, cipsTags } from "content";
+import { deployCardContent, cipsTags, suggestedChanges } from "content";
 
 export default function DeployContractPage({
   params,
@@ -53,7 +54,17 @@ export default function DeployContractPage({
             framework={item?.frameWork ?? []}
           />
           <div className="h-[26px]" />
-          <SuggestedAccordion />
+          <div className="flex w-full flex-col gap-4">
+            {suggestedChanges.map((item, index) => {
+              return (
+                <SuggestedCard
+                  key={index}
+                  title={item.title}
+                  text={item.text}
+                />
+              );
+            })}
+          </div>
         </div>
         <div className="w-[38%]">
           <div className="h-10" />

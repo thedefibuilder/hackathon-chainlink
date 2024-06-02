@@ -1,6 +1,6 @@
-import { reviewContent, vulnerabilitiesCard } from "content";
+import { reviewContent, suggestedChanges, vulnerabilitiesCard } from "content";
 import { cn } from "lib/utils";
-import SuggestedAccordion from "../suggested-changes/suggested-accordion";
+import SuggestedCard from "../suggested-changes/suggested-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
 import VulnerabilitiesCard from "../vulnerabilities-card";
 import TabsCard from "./tabs-card";
@@ -76,7 +76,18 @@ export default function TabsReview() {
                   })}
                 </div>
                 <div className="h-6" />
-                <SuggestedAccordion />
+                <div className="flex w-full flex-col gap-4">
+                  {suggestedChanges.map((item, index) => {
+                    return (
+                      <SuggestedCard
+                        key={index}
+                        title={item.title}
+                        text={item.text}
+                      />
+                    );
+                  })}
+                </div>
+                <div className="h-6" />
               </TabsContent>
             );
           })}

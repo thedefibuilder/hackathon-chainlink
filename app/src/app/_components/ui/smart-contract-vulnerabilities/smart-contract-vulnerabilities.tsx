@@ -2,12 +2,13 @@ import { cipsContent, vulnerabilitiesCard } from "content";
 import Image from "next/image";
 import Cips from "../cips";
 import VulnerabilitiesCard from "../vulnerabilities-card";
+import AddVulnerability from "./add-vulnerability";
 
 export default function SmartContractVulnerabilities() {
   return (
     <>
       <div className="flex flex-wrap items-center justify-between">
-        <div className="w-[70%]">
+        <div className="w-1/2">
           <h2 className="text-5xl font-bold">
             Your Smart Contract Vulnerabilities
           </h2>
@@ -33,7 +34,8 @@ export default function SmartContractVulnerabilities() {
             })}
           </div>
         </div>
-        <div className="flex w-[24%]  justify-end gap-2">
+        <div className="flex w-1/2 justify-end gap-2">
+          <AddVulnerability />
           <div className="flex rounded-lg bg-white px-4">
             <div className="flex flex-col ">
               <h3 className="mb-0 text-[32px] font-bold text-dark-darkMain">
