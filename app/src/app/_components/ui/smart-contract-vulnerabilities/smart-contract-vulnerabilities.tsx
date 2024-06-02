@@ -61,7 +61,7 @@ export default function SmartContractVulnerabilities() {
               title={item.title}
               text={item.text}
               severity={item.certainityScore}
-              score={60}
+              score={60} // TODO: Change this to actual score
               key={index}
             />
           );
