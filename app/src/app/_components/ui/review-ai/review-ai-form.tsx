@@ -70,7 +70,7 @@ export default function ReviewAiForm() {
         <div className="h-2" />
         <Input
           type="number"
-          placeholder="Type USDC amount"
+          placeholder="Type AVAX amount"
           {...register("rewardCritical")}
           onChange={handleInputChange("rewardCritical")}
           error={errors.rewardCritical?.message}
@@ -86,7 +86,7 @@ export default function ReviewAiForm() {
         <div className="h-2" />
         <Input
           type="number"
-          placeholder="Type USDC amount"
+          placeholder="Type AVAX amount"
           {...register("rewardHigh")}
           onChange={handleInputChange("rewardHigh")}
           error={errors.rewardHigh?.message}
@@ -102,7 +102,7 @@ export default function ReviewAiForm() {
         <div className="h-2" />
         <Input
           type="number"
-          placeholder="Type USDC amount"
+          placeholder="Type AVAX amount"
           {...register("rewardMedium")}
           onChange={handleInputChange("rewardMedium")}
           error={errors.rewardMedium?.message}
@@ -117,7 +117,7 @@ export default function ReviewAiForm() {
         <div className="h-2" />
         <Input
           type="number"
-          placeholder="Type USDC amount"
+          placeholder="Type AVAX amount"
           {...register("rewardLow")}
           onChange={handleInputChange("rewardLow")}
           error={errors.rewardLow?.message}
@@ -128,11 +128,11 @@ export default function ReviewAiForm() {
       <div className="w-1/2">
         <div className="flex flex-col items-center justify-center">
           <h3 className="text-center text-5xl font-bold text-textLight">
-            Total AVAX to reward
+            Total AVAX reward
           </h3>
           <div className="h-[52px]" />
           <h2 className="w-[200px] text-center text-[128px] font-bold text-textLight">
-            ${totalRewardAmount}
+            {totalRewardAmount}
           </h2>
         </div>
         <div className="h-[52px]" />

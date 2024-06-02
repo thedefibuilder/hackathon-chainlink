@@ -1,7 +1,6 @@
 import { reviewContent, suggestedChanges, vulnerabilitiesCard } from "content";
 import { cn } from "lib/utils";
 import AddVulnerability from "../smart-contract-vulnerabilities/add-vulnerability";
-import AddVulnerabilityForm from "../smart-contract-vulnerabilities/add-vulnerability-from";
 import SuggestedCard from "../suggested-changes/suggested-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
 import VulnerabilitiesCard from "../vulnerabilities-card";
@@ -25,6 +24,7 @@ export default function TabsReview() {
                 text={item.text}
                 date={item.date}
                 score={item.score}
+                cips={item.cips}
                 icons={item.icons}
                 isTriggerCard
               />
@@ -46,7 +46,6 @@ export default function TabsReview() {
                   title={item.title}
                   text={item.text}
                   date={item.date}
-                  score={item.score}
                   icons={item.icons}
                   haveCips
                   cips={item.cips}
@@ -57,12 +56,9 @@ export default function TabsReview() {
                   <h2 className="w- text-5xl font-bold text-textLight">
                     5 Vulnerabilites found
                   </h2>
-                  <div className="w-1/2">
-                    <AddVulnerability />
-                  </div>
                 </div>
 
-                <div className="h-16" />
+                <div className="h-10" />
                 <div className="flex flex-wrap gap-2">
                   {vulnerabilitiesCard.map((item, index) => {
                     return (
@@ -96,6 +92,12 @@ export default function TabsReview() {
                   })}
                 </div>
                 <div className="h-6" />
+                <div className="w-full">
+                  <h1 className="text-5xl font-bold text-textLight">
+                    Add a new vulnerability
+                  </h1>
+                  <AddVulnerability />
+                </div>
               </TabsContent>
             );
           })}

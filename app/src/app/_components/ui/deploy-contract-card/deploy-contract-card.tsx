@@ -15,21 +15,24 @@ import {
 import DeployContractForm from "./deploy-form";
 import { type z } from "zod";
 import { cn } from "lib/utils";
+import { chainsConfig } from "@/config/chains";
 
 export default function DeployContracCard() {
-  const [selectedCoin, setSelectedCoin] = useState(coins?.[0]?.value ?? "");
+  const [selectedCoin, setSelectedCoin] = useState(
+    chainsConfig?.[0]?.name ?? "",
+  );
   const { setValue } = useForm<z.infer<typeof DeployContractSchema>>({});
 
   return (
     <div className="rounded-[24px] bg-custom-gradient">
       <div className="h-6" />
       <Tabs defaultValue={selectedCoin}>
-        {coins.map((item, index) => (
-          <TabsContent value={item.value} key={index}>
+        {chainsConfig.map((item, index) => (
+          <TabsContent value={item.name} key={index}>
             <div className="flex items-center gap-4 pl-2">
               <div className="w-[20%]">
                 <Image
-                  src={item.imageSrc}
+                  src={item.logo}
                   alt="Coin Logo"
                   width={92}
                   height={92}
@@ -37,7 +40,7 @@ export default function DeployContracCard() {
                 />
               </div>
               <div className="w-[80%] text-textLight">
-                <h2 className="text-4xl font-bold">{item.value}</h2>
+                <h2 className="text-4xl font-bold">{item.name}</h2>
                 <div className="h-1" />
                 <p className="text-xl">Deploy audited and reviewed code.</p>
               </div>
@@ -52,13 +55,13 @@ export default function DeployContracCard() {
         <div className="h-4" />
 
         <TabsList className="!p-0">
-          {coins.map((item, index) => (
+          {chainsConfig.map((item, index) => (
             <TabsTrigger
-              value={item.value}
+              value={item.name}
               key={index}
               onClick={() => {
-                setSelectedCoin(item.value);
-                setValue("coins", item.value);
+                setSelectedCoin(item.name);
+                setValue("coins", item.name);
               }}
               type="button"
               className="!p-1"
@@ -66,13 +69,13 @@ export default function DeployContracCard() {
               <div
                 className={cn([
                   "ring-ring rounded border border-dark-darkLight p-2",
-                  selectedCoin === item.value
+                  selectedCoin === item.name
                     ? " border-primary-purpleMedium bg-dark-darkMain"
                     : "",
                 ])}
               >
                 <Image
-                  src={item.imageSrc}
+                  src={item.logo}
                   alt="Coin Logo"
                   width={30}
                   height={30}

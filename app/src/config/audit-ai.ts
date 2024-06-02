@@ -23,4 +23,6 @@ export type TAddEmbeddingResponse = {
   detail: string;
 };
 
+export const mockAuditRequestIds = [29, 31, 28, 29, 31, 28];
+
 export const aiAuditorBackendURL = "http://34.207.219.122";

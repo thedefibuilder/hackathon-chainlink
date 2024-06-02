@@ -3,7 +3,7 @@ interface ReviewContent {
   imageAlt: string;
   title: string;
   date: string;
-  score: string;
+  score?: string;
   text: string;
   icons: {
     iconImage: string;
@@ -19,13 +19,13 @@ export const reviewContent: ReviewContent[] = [
     imageAlt: "Ai Auditor Icon",
     title: "AI auditor",
     date: "25/04/2024",
-    score: "Critical",
     text: "This smart contract is vulnerable to reentrancy attacks, lacks proper access control, has potential state manipulation issues, and lacks essential features like events. These vulnerabilities could lead to financial losses and exploitation by attackers.",
+    cips: ["Swap", "Tokens", "Dexes"],
     icons: [
       {
-        iconImage: "/usd_icon.svg",
-        iconAlt: "USDC Icon",
-        value: "9000 USDC",
+        iconImage: "/avax.png",
+        iconAlt: "AVAX Icon",
+        value: "9000 AVAX",
       },
       {
         iconImage: "/terminal_white.svg",
@@ -38,20 +38,18 @@ export const reviewContent: ReviewContent[] = [
         value: "Phoenix Shadow",
       },
     ],
-    cips: ["Swap", "Critical", "Dexes"],
   },
   {
     imageSrc: "/sherlock.png",
     imageAlt: "Sherlock Icon",
     title: "Sherlock",
     date: "25/04/2024",
-    score: "Critical",
     text: "M-2: Swapping large amounts of assets back and forth in an Aerodrome pool allows to bypass exposure limits",
     icons: [
       {
-        iconImage: "/usd_icon.svg",
-        iconAlt: "USDC Icon",
-        value: "9000 USDC",
+        iconImage: "/avax.png",
+        iconAlt: "AVAX Icon",
+        value: "9000 AVAX",
       },
       {
         iconImage: "/terminal_white.svg",
@@ -64,20 +62,19 @@ export const reviewContent: ReviewContent[] = [
         value: "zzykxx",
       },
     ],
-    cips: ["Swap", "Critical", "Dexes"],
+    cips: ["Swap", "Tokens", "Dexes"],
   },
   {
     imageSrc: "/code_hawks.png",
     imageAlt: "Code Hawks Icon",
     title: "CodeHawks",
     date: "25/04/2024",
-    score: "Medium",
     text: "Ignoring the Well Function logic for a ratio of reserves calculation",
     icons: [
       {
-        iconImage: "/usd_icon.svg",
-        iconAlt: "USDC Icon",
-        value: "5000 USDC",
+        iconImage: "/avax.png",
+        iconAlt: "AVAX Icon",
+        value: "5000 AVAX",
       },
       {
         iconImage: "/terminal_white.svg",
@@ -97,39 +94,12 @@ export const reviewContent: ReviewContent[] = [
     imageAlt: "Code Hawks Icon",
     title: "CodeHawks",
     date: "25/04/2024",
-    score: "High",
     text: "Ignoring the Well Function logic for a ratio of reserves calculation",
     icons: [
       {
-        iconImage: "/usd_icon.svg",
-        iconAlt: "USDC Icon",
-        value: "3000 USDC",
-      },
-      {
-        iconImage: "/terminal_white.svg",
-        iconAlt: "Terminal White",
-        value: "Beans - Stalk: Dive Into Basin",
-      },
-      {
-        iconImage: "/clinical_notes_white.svg",
-        iconAlt: "Clinical Notes White",
-        value: "pontifex",
-      },
-    ],
-    cips: ["Swap", "Critical", "Dexes"],
-  },
-  {
-    imageSrc: "/code_hawks_b.png",
-    imageAlt: "Code Hawks Icon",
-    title: "CodeHawks",
-    date: "25/04/2024",
-    score: "Low",
-    text: "Ignoring the Well Function logic for a ratio of reserves calculation",
-    icons: [
-      {
-        iconImage: "/usd_icon.svg",
-        iconAlt: "USDC Icon",
-        value: "1500 USDC",
+        iconImage: "/avax.png",
+        iconAlt: "AVAX Icon",
+        value: "3000 AVAX",
       },
       {
         iconImage: "/terminal_white.svg",
@@ -368,12 +338,12 @@ export const deployCardContent = [
     icons: [
       {
         iconImage: "/terminal_white.svg",
-        iconAlt: "USDC Icon",
+        iconAlt: "AVAX Icon",
         value: "Zwappi - Derivatives DEX",
       },
       {
         iconImage: "/clinical_notes_white.svg",
-        iconAlt: "USDC Icon",
+        iconAlt: "AVAX Icon",
         value: "Phoenix Shadow",
       },
     ],

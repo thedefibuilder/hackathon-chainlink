@@ -18,12 +18,15 @@ export default function TabsCard({
   title: string;
   text: string;
   date: string;
-  score: string;
+  score?: string;
   icons: { iconImage: string; iconAlt: string; value: string }[];
   cips?: string[];
   haveCips?: boolean;
   isTriggerCard?: boolean;
 }) {
+  const getRandomElement = (arr: any[]) =>
+    arr[Math.floor(Math.random() * arr.length)];
+
   return (
     <>
       <div className="h-2" />
@@ -38,25 +41,20 @@ export default function TabsCard({
                 <h3 className="text-xl font-bold">{title}</h3>
                 {isTriggerCard ? null : <p>{date}</p>}
               </div>
-              <div
-                className={cn([
-                  " rounded-full px-4 py-1",
-                  score === "Critical" ? "bg-primary-red" : "",
-                  score === "High" ? "bg-primary-orange" : "",
-                  score === "Medium" ? "bg-primary-yellow" : "",
-                  score === "Low" ? "bg-primary-greenMedium" : "",
-                ])}
-              >
-                <p className="text-center font-black text-primary-redBold">
-                  {score}
-                </p>
-              </div>
-            </div>
-            <div className="pt-2">
-              {isTriggerCard ? (
-                <p className="text-left">Author Name here</p>
-              ) : (
-                <p className="w-[80%] text-left">{text}</p>
+              {score && (
+                <div
+                  className={cn([
+                    " rounded-full px-4 py-1",
+                    score === "Critical" ? "bg-primary-red" : "",
+                    score === "High" ? "bg-primary-orange" : "",
+                    score === "Medium" ? "bg-primary-yellow" : "",
+                    score === "Low" ? "bg-primary-greenMedium" : "",
+                  ])}
+                >
+                  <p className="text-center font-black text-primary-redBold">
+                    {score}
+                  </p>
+                </div>
               )}
             </div>
           </div>
