@@ -2,6 +2,7 @@ import { cn } from "lib/utils";
 import Image from "next/image";
 import Cips from "../cips";
 import { Progress } from "../progress";
+import { cipsTags } from "content";
 
 export default function DeploySmartContractCard({
   userName,
@@ -98,9 +99,14 @@ export default function DeploySmartContractCard({
         </div>
       </div>
 
-      <div className="h-4" />
-      <div className="h-40 border-t border-primary-purpleMedium px-4">
-        <p>wip</p>
+      <div className="border-t border-primary-purpleMedium px-4 py-4">
+        <section className="flex flex-row items-end">
+          <div className="flex gap-2">
+            {cipsTags.map((item, index) => {
+              return <Cips title={item} withBorder key={index} />;
+            })}
+          </div>
+        </section>
       </div>
     </div>
   );

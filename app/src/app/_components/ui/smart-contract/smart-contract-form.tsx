@@ -53,9 +53,11 @@ export default function SmartContractForm() {
   const tags = watch("tags");
   const onSubmit = (data: z.infer<typeof SmartContractSchema>) => {
     const [repoOwner, repoName] = data.repoLink.split("/").slice(-2);
-    if (!repoOwner || !repoName) return console.error("Invalid Repo Link");
-    const [open, setOpen] = useState(false);
-    const [value, setValue] = useState("");
+
+    if (!repoOwner || !repoName) {
+      console.log("Invalid repo link");
+      return;
+    }
 
     sendRequest.mutate({
       title: data.title,
@@ -156,6 +158,7 @@ export default function SmartContractForm() {
                 <Button
                   className="inline-flex items-center gap-2 rounded-lg bg-primary-purpleMedium px-4 py-1 text-[32px] font-bold text-white"
                   onClick={signInWithGithub}
+                  type="button"
                 >
                   <Image
                     src="/github.svg"
@@ -217,24 +220,24 @@ export default function SmartContractForm() {
           </div>
         </div>
       </div>
-      <div className="relative flex w-1/2 flex-col justify-between">
+      <div className="relative w-1/2 justify-between">
+        <ButtonSpinner
+          isLoading={sendRequest.isPending}
+          defaultContent="Audit My Smart Contract"
+          loadingContent="Loading..."
+          className="mb-4 w-full rounded-lg bg-primary-green px-4 py-2 text-2xl font-bold text-dark-darkMain"
+        />
         <Image
           src="/starsIcons.png"
           alt="Stars Icons"
           width={160}
           height={111}
-          className="absolute -right-8 top-4 h-28 w-40"
+          className="absolute -right-8 top-16 h-28 w-40"
         />
-        <p className="relative z-40 pr-6 text-2xl font-bold">
+
+        <p className="relative pr-6 text-2xl font-bold">
           Deliver safer code, and get audited in seconds with data rich AI.
         </p>
-
-        <ButtonSpinner
-          isLoading={sendRequest.isPending}
-          defaultContent="Audit My Smart Contract"
-          loadingContent="Loading..."
-          className="w-full rounded-lg bg-primary-green px-4 py-2 text-2xl font-bold text-dark-darkMain"
-        />
       </div>
     </form>
   );

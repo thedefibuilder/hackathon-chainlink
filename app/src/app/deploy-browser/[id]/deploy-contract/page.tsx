@@ -21,21 +21,7 @@ export default function DeployContractPage({
 
   return (
     <main className="min-h-screen bg-dark-darkMain px-24 text-white">
-      <div className="h-8" />
-      <section className="flex items-end justify-between">
-        <div>
-          <h1 className="text-[32px] font-bold text-textLight">
-            {item?.title}
-          </h1>
-          <h2 className="text-2xl font-bold text-textLight">{item?.user}</h2>
-        </div>
-        <div className="flex gap-2">
-          {cipsTags.map((item, index) => {
-            return <Cips title={item} withBorder key={index} />;
-          })}
-        </div>
-      </section>
-      <div className="h-8" />
+      <div className="h-16" />
 
       <div className="flex flex-wrap  justify-between">
         <div className="w-[60%]">

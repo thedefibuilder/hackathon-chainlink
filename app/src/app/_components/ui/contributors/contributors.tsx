@@ -58,9 +58,6 @@ export default function Contributors() {
                 <div className="flex flex-col items-end">
                   <p className="truncate text-2xl">{item.date}</p>
                   <div className="h-2" />
-                  <Button className="px2 w-1/2 rounded-full bg-primary-green py-1 font-bold text-dark-darkMain">
-                    More
-                  </Button>
                 </div>
               </div>
             </div>
