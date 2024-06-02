@@ -41,6 +41,7 @@ export const auditRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.auditRequest.findUnique({
         where: { id: input.id },
+        include: { auditResponse: true },
       });
     }),
 

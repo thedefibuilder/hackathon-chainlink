@@ -12,7 +12,9 @@ export async function GET(
 ) {
   const id = parseInt(params.id);
 
-  const auditRequest = await api.audit.getRequest({ id });
+  const auditRequest = await api.audit.getRequest({
+    id,
+  });
 
   return auditRequest
     ? NextResponse.json({
@@ -22,6 +24,7 @@ export async function GET(
         title: auditRequest.title,
         tags: auditRequest.tags,
         categories: auditRequest.categories,
+        isProcessed: !!auditRequest.auditResponse,
       })
     : NextResponse.json(
         {
