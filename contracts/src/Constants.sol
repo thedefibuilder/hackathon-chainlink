@@ -1,18 +1,21 @@
 /// SPDX-License-Identifier: MIT
+// solhint-disable max-line-length
 pragma solidity >=0.8.25;
 
 import { AggregatorV3Interface } from "@chainlink/shared/interfaces/AggregatorV3Interface.sol";
 
-string constant AUDIT_REQUEST_SOURCE_CODE = "const apiResponse = await Functions.makeHttpRequest({"
-    "url: `https://chainlink.defibuilder.com/api/audit/request/${args[0]}`, method:'POST'});"
-    "if (apiResponse.error) {throw Error(`${apiResponse.message}`)}; return Functions.encodeString(apiResponse)";
+string constant AUDIT_REQUEST_SOURCE_CODE =
+    "const requestResponse = await Functions.makeHttpRequest({ url: `https://chainlink.defibuilder.com/api/audit/request/${args[0]}`, method: 'GET' });"
+    "if (requestResponse.error || requestResponse.data.isProcessed) { throw Error('Request failed') }; "
+    "await Functions.makeHttpRequest({ url: `https://chainlink.defibuilder.com/api/audit/request/${args[0]}`, method: 'POST', timeout: '30000 ms' });"
+    "return Functions.encodeString('request sent');";
 
 // TODO: Call uploadEmbedding API
 string constant SUBMIT_VULN_REQUEST_SOURCE_CODE = "return Functions.encodeUint256(100e18);";
 
 uint32 constant GAS_LIMIT = 300_000;
 
-string constant AUDIT_BASE_URI = "https://chainlink.defibuilder/api/audit/"; // + auditRequestId for full URI
+string constant AUDIT_BASE_URI = "https://chainlink.defibuilder.com/api/audit/"; // + auditRequestId for full URI
 
 // Hardcoded for Avalanche Fuji C-Chain
 AggregatorV3Interface constant AVAX_USD_PRICE_FEED = AggregatorV3Interface(0x5498BB86BC934c8D34FDA08E81D444153d0D06aD);
