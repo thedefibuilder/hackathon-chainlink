@@ -10,7 +10,8 @@ export const auditRouter = createTRPCRouter({
   createRequest: protectedProcedure
     .input(
       z.object({
-        repoLink: z.string().min(1),
+        repoOwner: z.string().min(1),
+        repoName: z.string().min(1),
         filesInScope: z.array(z.string()).min(1),
         title: z.string().min(1),
         tags: z.array(z.string()).min(1),
@@ -20,7 +21,8 @@ export const auditRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       return ctx.db.auditRequest.create({
         data: {
-          repoLink: input.repoLink,
+          repoOwner: input.repoOwner,
+          repoName: input.repoName,
           filesInScope: input.filesInScope,
           title: input.title,
           tags: input.tags,
@@ -39,6 +41,18 @@ export const auditRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.auditRequest.findUnique({
         where: { id: input.id },
+      });
+    }),
+
+  getResponse: publicProcedure
+    .input(
+      z.object({
+        id: z.number(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.db.auditResponse.findUnique({
+        where: { auditRequestId: input.id },
       });
     }),
 });

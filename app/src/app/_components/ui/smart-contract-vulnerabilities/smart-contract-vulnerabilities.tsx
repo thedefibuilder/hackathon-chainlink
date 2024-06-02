@@ -60,7 +60,8 @@ export default function SmartContractVulnerabilities() {
               id={index + 1}
               title={item.title}
               text={item.text}
-              score={item.certainityScore}
+              severity={item.certainityScore}
+              score={60}
               key={index}
             />
           );

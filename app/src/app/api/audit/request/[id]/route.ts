@@ -1,3 +1,4 @@
+import { aiAuditorBackendURL } from "@/config/audit-ai";
 import { db } from "@/server/db";
 import { api } from "@/trpc/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -12,7 +13,8 @@ export async function GET(
 
   return auditRequest
     ? NextResponse.json({
-        repoLink: auditRequest.repoLink,
+        repoOwner: auditRequest.repoOwner,
+        repoName: auditRequest.repoName,
         filesInScope: auditRequest.filesInScope,
         title: auditRequest.title,
         tags: auditRequest.tags,
@@ -48,9 +50,37 @@ export async function POST(
   }
 
   // Parse each file in the request
-  // For each file pass it to AI Backend
+  const auditoResponses = await Promise.all(
+    auditRequest.filesInScope.map(async (file) => {
+      const fileContent = await api.github.getFileContent({
+        repoName: auditRequest.repoName,
+        repoOwner: auditRequest.repoOwner,
+        path: file,
+      });
+
+      const auditResponse = await fetch(
+        aiAuditorBackendURL + "/audit_function",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            function_code: fileContent,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      console.log(auditResponse);
+
+      return auditResponse;
+    }),
+  );
+
   // Collect the results
+
   // Save the results in the database
+
   // Return the id of the response
 
   return NextResponse.json(

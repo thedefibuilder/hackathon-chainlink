@@ -10,7 +10,8 @@ datasource db {
 model AuditRequest {
   id Int @id @default(autoincrement())
 
-  repoLink     String
+  repoOwner    String
+  repoName     String
   filesInScope String[]
 
   title      String

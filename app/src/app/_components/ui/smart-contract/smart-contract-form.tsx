@@ -27,14 +27,27 @@ export default function SmartContractForm() {
     // Mock Values, please change later !!!
     defaultValues: {
       title: "Bombaclat Smart Contract",
-      repoLink: "github.com/bombaclat",
-      filesInScope: ["bombaclat.sol"],
+      repoLink: "https://github.com/bel0v/eth-global-london",
+      filesInScope: [
+        "contracts/contracts/MockERC20.sol",
+        "contracts/contracts/MomentFactory.sol",
+      ],
       tags: ["bombaclat", "smart contract"],
       categories: ["bombaclat"],
     },
   });
   const onSubmit = (data: z.infer<typeof SmartContractSchema>) => {
-    sendRequest.mutate(data);
+    const [repoOwner, repoName] = data.repoLink.split("/").slice(-2);
+    if (!repoOwner || !repoName) return console.error("Invalid Repo Link");
+
+    sendRequest.mutate({
+      title: data.title,
+      repoOwner,
+      repoName,
+      filesInScope: data.filesInScope,
+      tags: data.tags,
+      categories: data.categories,
+    });
   };
 
   return (

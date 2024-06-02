@@ -10,18 +10,18 @@ export default function FileSelectTable({
   repoOwner,
   repoName,
 }: FileSelectTableProps) {
-  const getFiles = api.github.getRepoFiles.useQuery({
+  const geTree = api.github.getRepoTree.useQuery({
     repoOwner,
     repoName,
   });
 
   useEffect(() => {
-    console.log("getFiles", getFiles.data);
-  }, [getFiles.data]);
+    console.log("getFiles", geTree.data);
+  }, [geTree.data]);
 
   return (
     <div>
-      <h1>{getFiles.data?.length}</h1>
+      <h1>{geTree.data?.length}</h1>
     </div>
   );
 }

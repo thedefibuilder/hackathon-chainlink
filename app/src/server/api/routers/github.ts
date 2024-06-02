@@ -8,17 +8,27 @@ export const githubRouter = createTRPCRouter({
       visibility: "public",
     });
 
-    if (!allRepos || allRepos.data.length === 0) {
+    if (!allRepos || allRepos.data.length === 0 || !ctx.githubApi) {
       throw new Error("No repos found");
     }
 
-    return allRepos.data.map((repo) => ({
+    const allAuditableRepos = await Promise.all(
+      allRepos.data.filter(async (repo) => {
+        const languages = await ctx.githubApi?.repos.listLanguages({
+          owner: repo.owner?.login,
+          repo: repo.name,
+        });
+
+        return !!languages?.data.Solidity;
+      }),
+    );
+
+    return allAuditableRepos.map((repo) => ({
       name: repo.name,
-      url: repo.html_url,
       owner: repo.owner.login,
     }));
   }),
-  getRepoFiles: protectedProcedure
+  getRepoTree: protectedProcedure
     .input(
       z.object({
         repoOwner: z.string().min(1),
@@ -41,10 +51,32 @@ export const githubRouter = createTRPCRouter({
         recursive: "true",
       });
 
-      const filePaths = projectTree.data.tree
-        .filter((file) => file.type == "blob" && file.path?.endsWith(".sol"))
-        .map((file) => file.path);
+      return projectTree.data.tree.map((file) => ({
+        isFolder: file.type === "tree",
+        isAuditable: !!file.path?.endsWith(".sol"),
+        path: file.path,
+      }));
+    }),
 
-      return filePaths;
+  getFileContent: protectedProcedure
+    .input(
+      z.object({
+        repoOwner: z.string().min(1),
+        repoName: z.string().min(1),
+        path: z.string().min(1),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      if (!ctx.githubApi) {
+        throw new Error("Unauthorized");
+      }
+
+      const fileContent = await ctx.githubApi.repos.getContent({
+        owner: input.repoOwner,
+        repo: input.repoName,
+        path: input.path,
+      });
+
+      return fileContent.data;
     }),
 });
