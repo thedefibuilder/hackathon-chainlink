@@ -8,7 +8,6 @@ export const SmartContractSchema = z.object({
   repoLink: z.string().min(3, "Repo link is requierd"),
   filesInScope: z.array(z.string()).min(1, "Files in scope is requierd"),
   tags: z.array(z.string()),
-  categories: z.array(z.string()),
 });
 
 export const ReviewAISchema = z.object({

@@ -15,7 +15,7 @@ export default function SuggestedChanges() {
       />
       <div className="h-8" />
 
-      <div className="flex w-[72%] flex-col gap-4">
+      <div className="flex w-full flex-col gap-4">
         {suggestedChanges.map((item, index) => {
           return (
             <SuggestedCard key={index} title={item.title} text={item.text} />

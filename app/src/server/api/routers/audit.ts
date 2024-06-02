@@ -15,7 +15,6 @@ export const auditRouter = createTRPCRouter({
         filesInScope: z.array(z.string()).min(1),
         title: z.string().min(1),
         tags: z.array(z.string()).min(1),
-        categories: z.array(z.string()).min(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -26,7 +25,6 @@ export const auditRouter = createTRPCRouter({
           filesInScope: input.filesInScope,
           title: input.title,
           tags: input.tags,
-          categories: input.categories,
           createdBy: { connect: { id: ctx.session.user.id } },
         },
       });

@@ -16,7 +16,7 @@ import { api } from "@/trpc/react";
 import { cn } from "lib/utils";
 
 export default function SmartContractForm() {
-  const [tags, setTags] = useState<string[]>([]);
+  const [tagText, setTagText] = useState<string>("");
   const [selectedRepo, setSelectedRepo] = useState<{
     repoOwner: string;
     repoName: string;
@@ -27,12 +27,13 @@ export default function SmartContractForm() {
   const [open, setOpen] = useState(false);
   const [selectedFramework, setSelectedFramework] = useState("");
 
-  const handleSelect = (currentValue) => {
-    setSelectedFramework(
-      currentValue === selectedFramework ? "" : currentValue,
-    );
-    setOpen(false);
-  };
+  // const handleSelect = (currentValue) => {
+  //   setSelectedFramework(
+  //     currentValue === selectedFramework ? "" : currentValue,
+  //   );
+  //   setOpen(false);
+  // };
+
   const {
     handleSubmit,
     formState: { errors },
@@ -42,42 +43,37 @@ export default function SmartContractForm() {
   } = useForm<z.infer<typeof SmartContractSchema>>({
     resolver: zodResolver(SmartContractSchema),
     defaultValues: {
-      title: "Bombaclat Smart Contract",
-      repoLink: "https://github.com/bel0v/eth-global-london",
-      filesInScope: [
-        "contracts/contracts/MockERC20.sol",
-        "contracts/contracts/MomentFactory.sol",
-      ],
-      tags: ["bombaclat", "smart contract"],
-      categories: ["bombaclat"],
+      title: "",
+      repoLink: "",
+      filesInScope: [],
+      tags: [],
     },
   });
 
+  const tags = watch("tags");
   const onSubmit = (data: z.infer<typeof SmartContractSchema>) => {
     const [repoOwner, repoName] = data.repoLink.split("/").slice(-2);
     if (!repoOwner || !repoName) return console.error("Invalid Repo Link");
-    const [open, setOpen] = React.useState(false);
-    const [value, setValue] = React.useState("");
+    const [open, setOpen] = useState(false);
+    const [value, setValue] = useState("");
+
     sendRequest.mutate({
       title: data.title,
       repoOwner,
       repoName,
       filesInScope: data.filesInScope,
       tags: data.tags,
-      categories: data.categories,
     });
   };
 
-  const title = watch("title", "");
-  const addTag = () => {
-    if (title) {
-      setTags([...tags, title]);
-      setValue("title", "");
-    }
+  const addTag = (tag: string) => {
+    if (tagText === "") return;
+    setTagText("");
+    setValue("tags", [...tags, tag]);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex gap-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-row gap-6">
       <div className="w-full">
         <div className="flex w-full items-end gap-2">
           <Input
@@ -85,12 +81,20 @@ export default function SmartContractForm() {
             placeholder="Give your code a Title"
             {...register("title")}
             error={errors.title?.message}
-            className="w-[80%]"
+            className="w-[70%]"
+          />
+          <Input
+            type="text"
+            placeholder="Insert Tag"
+            onChange={(e) => setTagText(e.target.value)}
+            value={tagText}
+            error={errors.title?.message}
+            className="w-[20%]"
           />
           <Button
-            className="text-l inline-flex h-11 w-[13%] items-center gap-2 rounded bg-dark-darkLight px-4 py-1 font-bold text-primary-purpleMedium"
+            className="text-l inline-flex h-11 w-[20%] items-center gap-2 rounded bg-dark-darkLight px-4 py-1 font-bold text-primary-purpleMedium"
             type="button"
-            onClick={addTag}
+            onClick={() => addTag(tagText)}
           >
             <Image
               src="/label.svg"
@@ -99,7 +103,7 @@ export default function SmartContractForm() {
               height={24}
               className="h-6 w-6"
             />
-            Add Tags
+            Add Tag
           </Button>
         </div>
         <div className="h-6" />
@@ -185,6 +189,7 @@ export default function SmartContractForm() {
                       id="repoSelect"
                       onChange={(e) => {
                         const [owner, name] = e.target.value.split("/");
+                        if (!owner || !name) return;
                         setSelectedRepo({ repoOwner: owner, repoName: name });
                       }}
                       className="rounded-md bg-dark-darkLight p-2 text-white"
