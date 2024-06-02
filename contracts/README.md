@@ -2,6 +2,10 @@
 
 `forge verify-contract 0x34b3e90114373B996021f033c6902e929cD174fa AuditRegistry --verifier-url 'https://api.routescan.io/v2/network/testnet/evm/43113/etherscan' --etherscan-api-key "verifyContract" --constructor-args $(cast abi-encode "constructor(address,address)" 0x6A2313CAa56945AcC32DB08157e6a79D4986904C 0x3e770515D6Ed2197817dF6eeB26853df4E739080) --watch`
 
+Deploy with verified
+
+`forge script Deploy -f avalanche_fuji --broadcast --verify`
+
 ## Installing Dependencies
 
 Foundry typically uses git submodules to manage dependencies, but this template uses Node.js packages because

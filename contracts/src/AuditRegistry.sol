@@ -106,7 +106,7 @@ contract AuditRegistry is Ownable, ERC721URIStorage, ERC721Enumerable, Functions
     function convertUsdToNative(uint256 usdAmount) public view returns (uint256) {
         (, int256 answer,, uint256 updatedAt,) = AVAX_USD_PRICE_FEED.latestRoundData();
         if (answer <= 0 || updatedAt + PRICE_FEED_HEARTBEAT < block.timestamp) revert PriceFetchFailed();
-        return usdAmount * uint256(answer) / PRICE_FEED_UNIT;
+        return usdAmount * PRICE_FEED_UNIT / uint256(answer);
     }
 
     // NOTE: This function is just used for debugging purposes
