@@ -293,20 +293,3 @@ def check_distance(search_object, db_name, collection):
         return (1 - ave)*100
     else:
         return 100
-
-if __name__ == "__main__":
-    code = "function verify(\n    bytes calldata inputTxBytes,\n    uint16 outputIndex,\n    uint256 inputTxPos,\n    bytes calldata spendingTxBytes,\n    uint16 inputIndex,\n    bytes calldata signature,\n    bytes calldata /\\*optionalArgs\\*/\n)\n    external\n    view\n    returns (bool)\n{\n    PaymentTransactionModel.Transaction memory inputTx = PaymentTransactionModel.decode(inputTxBytes);\n    require(inputTx.txType == supportInputTxType, \"Input tx is an unsupported payment tx type\");\n\n    PaymentTransactionModel.Transaction memory spendingTx = PaymentTransactionModel.decode(spendingTxBytes);\n    require(spendingTx.txType == supportSpendingTxType, \"The spending tx is an unsupported payment tx type\");\n\n    UtxoPosLib.UtxoPos memory utxoPos = UtxoPosLib.build(TxPosLib.TxPos(inputTxPos), outputIndex);\n    require(\n        spendingTx.inputs[inputIndex] == bytes32(utxoPos.value),\n        \"Spending tx points to the incorrect output UTXO position\"\n    );\n\n    address payable owner = inputTx.outputs[outputIndex].owner();\n    require(owner == ECDSA.recover(eip712.hashTx(spendingTx), signature), \"Tx in not signed correctly\");\n\n    return true;\n}\n\n"
-    vulnerability = "The function does not validate the length of the 'signature' parameter, which could lead to potential vulnerabilities such as buffer overflow or memory corruption."
-    # results = code_similarity_search(code)
-    # print(results)
-    # encoding = tiktoken.get_encoding("cl100k_base")
-    # print(results[0])
-    # print(encoding.encode(results[0][0].page_content))
-
-    #print(create_function_prompt(user_code=code))
-    #print(discover_function_vulnerabilites(code))
-    #print(create_recommendation_prompt(code, vulnerability))
-
-    #print(generate_recommendations(code, vulnerability))
-    #print(generate_function_audit(code))
-    print(check_distance(vulnerability))

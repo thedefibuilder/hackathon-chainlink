@@ -127,4 +127,3 @@ if __name__ == '__main__':
     link = 'https://gist.github.com/Trumpero/adbcd84c33f71856dbf379f581e8abbb'
 
     code = get_github_code_snippet(link)
-    print(ATLAS_DB_URI)
