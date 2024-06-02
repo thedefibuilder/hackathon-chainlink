@@ -14,7 +14,7 @@ export const auditRouter = createTRPCRouter({
         repoName: z.string().min(1),
         filesInScope: z.array(z.string()).min(1),
         title: z.string().min(1),
-        tags: z.array(z.string()).min(1),
+        tags: z.array(z.string()),
       }),
     )
     .mutation(async ({ ctx, input }) => {

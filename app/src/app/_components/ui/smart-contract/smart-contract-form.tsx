@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import { type z } from "zod";
@@ -14,21 +14,47 @@ import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 import { signInWithGithub } from "lib/github-sign-in";
 import { api } from "@/trpc/react";
 import { cn } from "lib/utils";
+import { useAccount, useContractWrite, useSwitchChain } from "wagmi";
+import { avalancheFuji } from "viem/chains";
+import { write } from "fs";
+import { contracts } from "@/config/contracts";
+import { parseEther } from "viem";
 
 export default function SmartContractForm() {
   const [tagText, setTagText] = useState<string>("");
   const { data, status } = useSession();
   const sendRequest = api.audit.createRequest.useMutation();
   const getRepos = api.github.getUserRepos.useQuery();
-  const [open, setOpen] = useState(false);
-  const [selectedFramework, setSelectedFramework] = useState("");
+  const { isConnected: isWalletConnected, chainId } = useAccount();
+  const { switchChain, isPending: isSwitchLoading } = useSwitchChain();
+  const {
+    writeContract,
+    data: requestAuditData,
+    isSuccess,
+    isPending: isWriteLoading,
+  } = useContractWrite();
 
-  // const handleSelect = (currentValue) => {
-  //   setSelectedFramework(
-  //     currentValue === selectedFramework ? "" : currentValue,
-  //   );
-  //   setOpen(false);
-  // };
+  const isConnected = useMemo(() => {
+    return status === "authenticated" && isWalletConnected;
+  }, [status, isWalletConnected]);
+
+  useEffect(() => {
+    if (isWalletConnected && sendRequest.isSuccess && sendRequest.data?.id) {
+      console.log(sendRequest.data?.id);
+
+      if (chainId !== avalancheFuji.id) {
+        switchChain({ chainId: avalancheFuji.id });
+      }
+
+      writeContract({
+        abi: contracts.registry.abi,
+        address: contracts.registry.address,
+        functionName: "requestAudit",
+        args: [BigInt(sendRequest.data?.id)],
+        value: parseEther("0.1"),
+      });
+    }
+  }, [isWalletConnected, sendRequest.isSuccess, sendRequest.data]);
 
   const {
     handleSubmit,
@@ -220,7 +246,7 @@ export default function SmartContractForm() {
       </div>
       <div className="relative w-1/2 justify-between">
         <ButtonSpinner
-          isLoading={sendRequest.isPending}
+          isLoading={sendRequest.isPending || isSwitchLoading || isWriteLoading}
           defaultContent="Audit My Smart Contract"
           loadingContent="Loading..."
           className="mb-4 w-full rounded-lg bg-primary-green px-4 py-2 text-2xl font-bold text-dark-darkMain"
