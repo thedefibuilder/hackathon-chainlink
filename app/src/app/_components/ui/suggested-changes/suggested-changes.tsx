@@ -1,8 +1,17 @@
 import { suggestedChanges } from "content";
 import SectionTitle from "../section-title";
 import SuggestedCard from "./suggested-card";
+import { api } from "@/trpc/react";
 
-export default function SuggestedChanges() {
+type SuggestedCardProps = {
+  requestId: number;
+};
+
+export default function SuggestedChanges({ requestId }: SuggestedCardProps) {
+  const getResponse = api.audit.getResponse.useQuery({
+    id: requestId,
+  });
+
   return (
     <>
       <SectionTitle
@@ -16,9 +25,13 @@ export default function SuggestedChanges() {
       <div className="h-8" />
 
       <div className="flex w-full flex-col gap-4">
-        {suggestedChanges.map((item, index) => {
+        {getResponse.data?.vulnerabilities.map((item, index) => {
           return (
-            <SuggestedCard key={index} title={item.title} text={item.text} />
+            <SuggestedCard
+              key={index}
+              title={item.title}
+              text={item.recommendation}
+            />
           );
         })}
       </div>

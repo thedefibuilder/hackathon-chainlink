@@ -1,8 +1,19 @@
 import { vulnerabilitiesCard } from "content";
 import Image from "next/image";
 import VulnerabilitiesCard from "../vulnerabilities-card";
+import { api } from "@/trpc/react";
 
-export default function SmartContractVulnerabilities() {
+type VulnerabilitiesCardProps = {
+  requestId: number;
+};
+
+export default function SmartContractVulnerabilities({
+  requestId,
+}: VulnerabilitiesCardProps) {
+  const getResponse = api.audit.getResponse.useQuery({
+    id: requestId,
+  });
+
   return (
     <>
       <div className="flex flex-wrap items-center justify-between">
@@ -17,7 +28,7 @@ export default function SmartContractVulnerabilities() {
           <div className="flex rounded-lg bg-white px-4">
             <div className="flex flex-col ">
               <h3 className="mb-0 text-[32px] font-bold text-dark-darkMain">
-                5
+                {getResponse.data?.vulnerabilities.length || 0}
               </h3>
               <p className="font-bold text-dark-darkMain">Vulnerabilities</p>
             </div>
@@ -34,31 +45,21 @@ export default function SmartContractVulnerabilities() {
       </div>
       <div className="h-8" />
       <div className="flex flex-wrap gap-6">
-        {vulnerabilitiesCard.map((item, index) => {
+        {getResponse.data?.vulnerabilities.map((item, index) => {
           return (
             <VulnerabilitiesCard
               id={index + 1}
               title={item.title}
-              text={item.text}
-              severity={item.certainityScore}
-              score={60} // TODO: Change this to actual score
+              text={item.description}
+              severity={
+                item.severity.charAt(0).toUpperCase() + item.severity.slice(1)
+              }
+              score={item.certainityScore}
               key={index}
             />
           );
         })}
       </div>
-
-      <div className="h-8" />
-      <>
-        <h2 className="text-5xl font-bold text-textLight">Summary</h2>
-        <div className="h-2" />
-        <p className="w-3/4 text-xl">
-          This smart contract is vulnerable to reentrancy attacks, lacks proper
-          access control, has potential state manipulation issues, and lacks
-          essential features like events. These vulnerabilities could lead to
-          financial losses and exploitation by attackers.
-        </p>
-      </>
     </>
   );
 }

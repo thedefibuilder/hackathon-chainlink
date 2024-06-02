@@ -1,7 +1,11 @@
 import SmartContractForm from "./smart-contract-form";
 import SectionTitle from "../section-title";
 
-export default function SmartContract() {
+type SmartContractProps = {
+  setRequestId: (requestId: number) => void;
+};
+
+export default function SmartContract({ setRequestId }: SmartContractProps) {
   return (
     <>
       <SectionTitle
@@ -13,7 +17,7 @@ export default function SmartContract() {
         imgHeight={48}
       />
       <div className="h-6" />
-      <SmartContractForm />
+      <SmartContractForm setRequestId={setRequestId} />
     </>
   );
 }
