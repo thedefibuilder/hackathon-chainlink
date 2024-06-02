@@ -1,5 +1,5 @@
+"use client";
 import React, { useMemo, useRef, useState } from "react";
-
 import dynamic from "next/dynamic";
 import { useAccount } from "wagmi";
 import {
@@ -84,7 +84,7 @@ export default function WalletDropdown() {
       onOpenChange={setIsDropdownOpen}
     >
       <DropdownMenuTrigger asChild>
-        <Avatar>
+        <Avatar className="h-8 w-8">
           <AvatarImage
             src={data?.user.image ?? "https://github.com/shadcn.png"}
           />

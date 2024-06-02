@@ -29,13 +29,15 @@ export default function Header() {
       <nav className="flex justify-between px-24">
         <div className="flex items-center gap-20">
           <Link href="/">
-            <Image src="/logo.png" alt="logo" width={108} height={108} />
+            <Image src="/logo.png" alt="logo" width={220} height={220} />
           </Link>
           <ul className="flex items-center gap-8">
             {links.map((item, index) => {
               return (
                 <li key={index} className="font-extrabold text-white">
-                  <Link href={item.link}>{item.text}</Link>
+                  <Link href={item.link} className="text-xl">
+                    {item.text}
+                  </Link>
                 </li>
               );
             })}
@@ -79,7 +81,11 @@ export default function Header() {
                     {(() => {
                       if (!connected) {
                         return (
-                          <button onClick={openConnectModal} type="button">
+                          <button
+                            onClick={openConnectModal}
+                            type="button"
+                            className="h-8"
+                          >
                             Connect Wallet
                           </button>
                         );

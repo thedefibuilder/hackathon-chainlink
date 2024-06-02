@@ -165,9 +165,7 @@ export default function VulnerabilitiesCard({
           <div className="h-[28px]" />
           <div className="flex items-end gap-2">
             <div className="w-1/2">
-              <h3 className="text-2xl font-extrabold">
-                AI certainty severity:
-              </h3>
+              <h3 className="text-2xl font-extrabold">AI certainty:</h3>
               <p>AI confidence level related to the vulnerability</p>
             </div>
             <div className="w-1/2">

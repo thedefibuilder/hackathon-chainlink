@@ -23,7 +23,6 @@ export async function GET(
         filesInScope: auditRequest.filesInScope,
         title: auditRequest.title,
         tags: auditRequest.tags,
-        categories: auditRequest.categories,
         isProcessed: !!auditRequest.auditResponse,
       })
     : NextResponse.json(

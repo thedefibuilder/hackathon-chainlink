@@ -14,19 +14,13 @@ export default function SuggestedChanges() {
         imgHeight={48}
       />
       <div className="h-8" />
-      <div className="flex w-full gap-4">
-        <div className="w-[70%] rounded-b-[32px] bg-custom-gradient px-6">
-          wip
-          <div className="h-40"></div>
-          <div className="h-28"></div>
-        </div>
-        <div className="flex w-[40%] flex-col gap-4">
-          {suggestedChanges.map((item, index) => {
-            return (
-              <SuggestedCard key={index} title={item.title} text={item.text} />
-            );
-          })}
-        </div>
+
+      <div className="flex w-full flex-col gap-4">
+        {suggestedChanges.map((item, index) => {
+          return (
+            <SuggestedCard key={index} title={item.title} text={item.text} />
+          );
+        })}
       </div>
     </>
   );

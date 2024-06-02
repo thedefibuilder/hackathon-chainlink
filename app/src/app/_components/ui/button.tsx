@@ -13,7 +13,7 @@ export default function Button({
   children,
   className,
   disabled,
-  type = "submit",
+  type = "button",
 }: ButtonProps) {
   return (
     <button

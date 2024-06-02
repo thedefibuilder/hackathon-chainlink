@@ -1,12 +1,14 @@
 import { z } from "zod";
 
+const SeverityEnum = z.enum(["Critical", "Medium", "High", "Low"]);
+
 export const SmartContractSchema = z.object({
   id: z.number().optional(),
   title: z.string().min(3, "Title is requierd"),
-  repoLink: z.string().min(3, "Repo link is requierd"),
+  repoName: z.string().min(3, "Repo name is requierd"),
+  repoOwner: z.string().min(3, "Repo owner is requierd"),
   filesInScope: z.array(z.string()).min(1, "Files in scope is requierd"),
   tags: z.array(z.string()),
-  categories: z.array(z.string()),
 });
 
 export const ReviewAISchema = z.object({
@@ -36,4 +38,12 @@ export const DeployContractSchema = z.object({
   trustedForwarder: z.string().min(3, "Trusted forwarder is requierd"),
   tokenAddress: z.string().min(3, "The token address is requierd"),
   vrf: z.string().min(3, "The vrfV2Wrapper address is requierd"),
+});
+export const AddVulnerabilitiesSchema = z.object({
+  id: z.number().optional(),
+  title: z.string().min(3, "Title is requierd"),
+  severity: SeverityEnum,
+  description: z.string().min(3, "Description is requierd"),
+  recomandation: z.string().min(3, "Description is requierd"),
+  permalink: z.string().min(3, "The permalink is requierd"),
 });

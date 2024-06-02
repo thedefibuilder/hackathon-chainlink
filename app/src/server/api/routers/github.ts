@@ -18,8 +18,9 @@ export const githubRouter = createTRPCRouter({
           owner: repo.owner?.login,
           repo: repo.name,
         });
-
-        return !!languages?.data.Solidity;
+        // fix this to return only solidity files
+        // console.log(languages?.data.Solidity !== undefined);
+        return languages?.data.Solidity !== undefined;
       }),
     );
 

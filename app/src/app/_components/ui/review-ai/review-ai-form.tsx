@@ -128,7 +128,7 @@ export default function ReviewAiForm() {
       <div className="w-1/2">
         <div className="flex flex-col items-center justify-center">
           <h3 className="text-center text-5xl font-bold text-textLight">
-            Total USDC to reward
+            Total AVAX to reward
           </h3>
           <div className="h-[52px]" />
           <h2 className="w-[200px] text-center text-[128px] font-bold text-textLight">

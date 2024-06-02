@@ -7,8 +7,9 @@ import DeployContracCard from "@/app/_components/ui/deploy-contract-card/deploy-
 
 import SectionTitle from "@/app/_components/ui/section-title";
 import SuggestedAccordion from "@/app/_components/ui/suggested-changes/suggested-accordion";
+import SuggestedCard from "@/app/_components/ui/suggested-changes/suggested-card";
 import TotalAward from "@/app/_components/ui/total-award";
-import { deployCardContent, cipsTags } from "content";
+import { deployCardContent, cipsTags, suggestedChanges } from "content";
 
 export default function DeployContractPage({
   params,
@@ -20,21 +21,7 @@ export default function DeployContractPage({
 
   return (
     <main className="min-h-screen bg-dark-darkMain px-24 text-white">
-      <div className="h-8" />
-      <section className="flex items-end justify-between">
-        <div>
-          <h1 className="text-[32px] font-bold text-textLight">
-            {item?.title}
-          </h1>
-          <h2 className="text-2xl font-bold text-textLight">{item?.user}</h2>
-        </div>
-        <div className="flex gap-2">
-          {cipsTags.map((item, index) => {
-            return <Cips title={item} withBorder key={index} />;
-          })}
-        </div>
-      </section>
-      <div className="h-8" />
+      <div className="h-16" />
 
       <div className="flex flex-wrap  justify-between">
         <div className="w-[60%]">
@@ -53,7 +40,17 @@ export default function DeployContractPage({
             framework={item?.frameWork ?? []}
           />
           <div className="h-[26px]" />
-          <SuggestedAccordion />
+          <div className="flex w-full flex-col gap-4">
+            {suggestedChanges.map((item, index) => {
+              return (
+                <SuggestedCard
+                  key={index}
+                  title={item.title}
+                  text={item.text}
+                />
+              );
+            })}
+          </div>
         </div>
         <div className="w-[38%]">
           <div className="h-10" />
