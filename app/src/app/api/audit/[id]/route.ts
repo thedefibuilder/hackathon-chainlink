@@ -13,9 +13,12 @@ export async function GET(
   });
 
   return auditResponse
-    ? NextResponse.json({
-        findings: auditResponse.vulnerabilities,
-      })
+    ? NextResponse.json(
+        {
+          findings: auditResponse.vulnerabilities,
+        },
+        { status: 200 },
+      )
     : NextResponse.json(
         {
           error: "Response not found",

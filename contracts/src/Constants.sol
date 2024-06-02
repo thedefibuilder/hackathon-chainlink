@@ -15,6 +15,8 @@ string constant SUBMIT_VULN_REQUEST_SOURCE_CODE =
 
 uint32 constant GAS_LIMIT = 300_000;
 
+string constant AUDIT_BASE_URI = "https://chainlink.defibuilder/api/audit/"; // + auditRequestId for full URI
+
 // Hardcoded for Avalanche Fuji C-Chain
 AggregatorV3Interface constant AVAX_USD_PRICE_FEED = AggregatorV3Interface(0x5498BB86BC934c8D34FDA08E81D444153d0D06aD);
 uint40 constant PRICE_FEED_HEARTBEAT = 600 seconds;
