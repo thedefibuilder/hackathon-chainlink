@@ -41,6 +41,7 @@ model AuditResponse {
 
 model Vulnerability {
   id              Int    @id @default(autoincrement())
+  filePath        String
   title           String
   description     String
   severity        String
