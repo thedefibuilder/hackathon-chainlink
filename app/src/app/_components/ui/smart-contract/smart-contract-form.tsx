@@ -17,10 +17,6 @@ import { cn } from "lib/utils";
 
 export default function SmartContractForm() {
   const [tagText, setTagText] = useState<string>("");
-  const [selectedRepo, setSelectedRepo] = useState<{
-    repoOwner: string;
-    repoName: string;
-  } | null>(null);
   const { data, status } = useSession();
   const sendRequest = api.audit.createRequest.useMutation();
   const getRepos = api.github.getUserRepos.useQuery();
@@ -44,25 +40,25 @@ export default function SmartContractForm() {
     resolver: zodResolver(SmartContractSchema),
     defaultValues: {
       title: "",
-      repoLink: "",
+      repoName: "",
+      repoOwner: "",
       filesInScope: [],
       tags: [],
     },
   });
 
+  const setFiles = (files: string[]) => {
+    setValue("filesInScope", files);
+  };
+
   const tags = watch("tags");
+  const repoName = watch("repoName");
+  const repoOwner = watch("repoOwner");
   const onSubmit = (data: z.infer<typeof SmartContractSchema>) => {
-    const [repoOwner, repoName] = data.repoLink.split("/").slice(-2);
-
-    if (!repoOwner || !repoName) {
-      console.log("Invalid repo link");
-      return;
-    }
-
     sendRequest.mutate({
       title: data.title,
-      repoOwner,
-      repoName,
+      repoOwner: data.repoOwner,
+      repoName: data.repoName,
       filesInScope: data.filesInScope,
       tags: data.tags,
     });
@@ -193,7 +189,8 @@ export default function SmartContractForm() {
                       onChange={(e) => {
                         const [owner, name] = e.target.value.split("/");
                         if (!owner || !name) return;
-                        setSelectedRepo({ repoOwner: owner, repoName: name });
+                        setValue("repoOwner", owner);
+                        setValue("repoName", name);
                       }}
                       className="rounded-md bg-dark-darkLight p-2 text-white"
                     >
@@ -209,10 +206,11 @@ export default function SmartContractForm() {
                     </select>
                   </div>
                   <div className="h-4" />
-                  {selectedRepo && (
+                  {repoName && repoOwner && (
                     <FileSelectTable
-                      repoOwner={selectedRepo.repoOwner}
-                      repoName={selectedRepo.repoName}
+                      setSelectedFiles={setFiles}
+                      repoOwner={repoOwner}
+                      repoName={repoName}
                     />
                   )}
                 </>

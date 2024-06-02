@@ -20,7 +20,12 @@ export default function ButtonSpinner({
   ...otherProperties
 }: TButtonSpinner) {
   return (
-    <Button disabled={isLoading} className={cn(className)} {...otherProperties}>
+    <Button
+      type="submit"
+      disabled={isLoading}
+      className={cn(className)}
+      {...otherProperties}
+    >
       {isLoading ? (
         <div className="flex items-center gap-x-2.5">
           <Loader2 className="h-5 w-5 animate-spin" />

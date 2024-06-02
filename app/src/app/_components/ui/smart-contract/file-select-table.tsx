@@ -6,11 +6,13 @@ import { cn } from "lib/utils";
 type FileSelectTableProps = {
   repoOwner: string;
   repoName: string;
+  setSelectedFiles: (files: string[]) => void;
 };
 
 export default function FileSelectTable({
   repoOwner,
   repoName,
+  setSelectedFiles,
 }: FileSelectTableProps) {
   const geTree = api.github.getRepoTree.useQuery({
     repoOwner,
@@ -22,7 +24,9 @@ export default function FileSelectTable({
   }, [geTree.data]);
 
   useEffect(() => {
-    console.log("getFiles", auditableFiles);
+    if (auditableFiles) {
+      setSelectedFiles(auditableFiles.map((file) => file.path!));
+    }
   }, [auditableFiles]);
 
   return (
