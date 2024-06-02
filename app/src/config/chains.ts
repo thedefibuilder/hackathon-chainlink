@@ -7,6 +7,7 @@ import {
   polygonMumbai,
   sepolia,
   avalancheFuji,
+  scrollSepolia,
 } from "viem/chains";
 
 export type TChain = {
@@ -25,6 +26,11 @@ export const chainsConfig: TChain[] = [
     name: "Avalanche Fuji",
     logo: "https://pbs.twimg.com/profile_images/1605605053901021184/9LNylZAA_400x400.png",
     network: avalancheFuji,
+  },
+  {
+    name: "Scroll Sepolia Tesnet",
+    logo: "https://pbs.twimg.com/profile_images/1696531511519150080/Fq5O0LeN_400x400.jpg",
+    network: scrollSepolia,
   },
   {
     name: "Binance Smart Chain Testnet",

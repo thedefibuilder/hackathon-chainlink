@@ -7,7 +7,7 @@ export default function SuggestedCard({
   isAccoriodn,
 }: {
   title: string;
-  text: string;
+  text: string | JSX.Element;
   isAccoriodn?: boolean;
 }) {
   return (

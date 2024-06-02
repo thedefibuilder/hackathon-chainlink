@@ -24,9 +24,6 @@ export default function TabsCard({
   haveCips?: boolean;
   isTriggerCard?: boolean;
 }) {
-  const getRandomElement = (arr: any[]) =>
-    arr[Math.floor(Math.random() * arr.length)];
-
   return (
     <>
       <div className="h-2" />
@@ -103,7 +100,6 @@ export default function TabsCard({
       ) : null}
       {isTriggerCard ? (
         <>
-          {" "}
           <div className="h-6" />
           <div className="flex w-full items-center gap-2">
             {icons.map((icon, iconIndex) => (
