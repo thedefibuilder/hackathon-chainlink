@@ -16,11 +16,17 @@ import { api } from "@/trpc/react";
 import { cn } from "lib/utils";
 import { useAccount, useContractWrite, useSwitchChain } from "wagmi";
 import { avalancheFuji } from "viem/chains";
-import { write } from "fs";
 import { contracts } from "@/config/contracts";
 import { parseEther } from "viem";
+import { useToast } from "../../toast/use-toast";
 
-export default function SmartContractForm() {
+type SmartContractFormProps = {
+  setRequestId: (id: number) => void;
+};
+
+export default function SmartContractForm({
+  setRequestId,
+}: SmartContractFormProps) {
   const [tagText, setTagText] = useState<string>("");
   const { data, status } = useSession();
   const sendRequest = api.audit.createRequest.useMutation();
@@ -30,7 +36,7 @@ export default function SmartContractForm() {
   const {
     writeContract,
     data: requestAuditData,
-    isSuccess,
+    isSuccess: isWriteSuccess,
     isPending: isWriteLoading,
   } = useContractWrite();
 
@@ -38,10 +44,10 @@ export default function SmartContractForm() {
     return status === "authenticated" && isWalletConnected;
   }, [status, isWalletConnected]);
 
+  const { toast } = useToast();
+
   useEffect(() => {
     if (isWalletConnected && sendRequest.isSuccess && sendRequest.data?.id) {
-      console.log(sendRequest.data?.id);
-
       if (chainId !== avalancheFuji.id) {
         switchChain({ chainId: avalancheFuji.id });
       }
@@ -53,8 +59,15 @@ export default function SmartContractForm() {
         args: [BigInt(sendRequest.data?.id)],
         value: parseEther("0.1"),
       });
+
+      toast({
+        title: "Success 🎉",
+        description: "Your request has been submitted",
+      });
+
+      setRequestId(29);
     }
-  }, [isWalletConnected, sendRequest.isSuccess, sendRequest.data]);
+  }, [isWalletConnected, sendRequest.isSuccess, sendRequest.data?.id]);
 
   const {
     handleSubmit,

@@ -119,9 +119,6 @@ export default function VulnerabilitiesCard({
                 <h3 className="text-2xl font-extrabold text-textLight">
                   {title}
                 </h3>
-                <div className="h-4" />
-                <p className="h-[88px] text-textLight">{text}</p>
-                <div className="h-5" />
                 <div className="inline-flex justify-end gap-2">
                   <div
                     className={cn([
@@ -137,31 +134,14 @@ export default function VulnerabilitiesCard({
                     </p>
                   </div>
                 </div>
+                <div className="h-4" />
+
+                <p className="h-full overflow-y-auto text-textLight">{text}</p>
+                <div className="h-5" />
               </div>
             </div>
           </div>
           <div className="h-2" />
-          <div
-            className={cn([
-              "rounded-l-g rounded-lg p-2 !text-white",
-              severity === "Critical" ? "border border-primary-red" : "",
-              severity === "High" ? "border border-primary-orange" : "",
-              severity === "Medium" ? " border border-primary-yellow" : "",
-              severity === "Low" ? "border border-primary-greenMedium" : "",
-            ])}
-          >
-            <div
-              className={cn([
-                "px-2 !text-white",
-                severity === "Critical" ? "bg-primary-redBold" : "",
-                severity === "High" ? "bg-primary-orangeBold" : "",
-                severity === "Medium" ? "bg-primary-yellowBold " : "",
-                severity === "Low" ? "bg-primary-greenBold " : "",
-              ])}
-            >
-              <p>wip</p>
-            </div>
-          </div>
           <div className="h-[28px]" />
           <div className="flex items-end gap-2">
             <div className="w-1/2">

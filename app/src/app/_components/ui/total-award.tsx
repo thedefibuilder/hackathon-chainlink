@@ -15,7 +15,7 @@ export default function TotalAward() {
       <div className="w-[60%]">
         <p className="text-[24px] font-medium">Total Awarded</p>
         <p className="text-5xl">
-          <span className="font-bold">$2500</span> USDC
+          <span className="font-bold">$2500</span> AVAX
         </p>
       </div>
     </div>

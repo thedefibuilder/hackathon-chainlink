@@ -1,13 +1,26 @@
+"use client";
 import { reviewContent, suggestedChanges, vulnerabilitiesCard } from "content";
 import { cn } from "lib/utils";
 import AddVulnerability from "../smart-contract-vulnerabilities/add-vulnerability";
-import AddVulnerabilityForm from "../smart-contract-vulnerabilities/add-vulnerability-from";
 import SuggestedCard from "../suggested-changes/suggested-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
 import VulnerabilitiesCard from "../vulnerabilities-card";
 import TabsCard from "./tabs-card";
+import { api } from "@/trpc/react";
+import { useState } from "react";
+import { mockAuditRequestIds } from "@/config/audit-ai";
 
-export default function TabsReview() {
+const getRandomElement = (arr: any[]) =>
+  arr[Math.floor(Math.random() * arr.length)];
+
+export default function TabsReview({}) {
+  const [requestId, setRequestId] = useState(
+    getRandomElement(mockAuditRequestIds),
+  );
+  const getResponse = api.audit.getResponse.useQuery({
+    id: requestId,
+  });
+
   return (
     <>
       <Tabs className="flex h-full w-full items-start gap-5" defaultValue="0">
@@ -16,6 +29,9 @@ export default function TabsReview() {
             <TabsTrigger
               key={index}
               value={index.toString()}
+              onClick={() => {
+                setRequestId(getRandomElement(mockAuditRequestIds));
+              }}
               className="flex w-full flex-col rounded-[16px] border border-dark-darkLight !p-3  text-textLight"
             >
               <TabsCard
@@ -25,6 +41,7 @@ export default function TabsReview() {
                 text={item.text}
                 date={item.date}
                 score={item.score}
+                cips={item.cips}
                 icons={item.icons}
                 isTriggerCard
               />
@@ -46,7 +63,6 @@ export default function TabsReview() {
                   title={item.title}
                   text={item.text}
                   date={item.date}
-                  score={item.score}
                   icons={item.icons}
                   haveCips
                   cips={item.cips}
@@ -55,24 +71,25 @@ export default function TabsReview() {
                 <div className="h-10" />
                 <div className="flex items-end gap-4">
                   <h2 className="w- text-5xl font-bold text-textLight">
-                    5 Vulnerabilites found
+                    {getResponse.data?.vulnerabilities.length || 0}{" "}
+                    Vulnerabilites found
                   </h2>
-                  <div className="w-1/2">
-                    <AddVulnerability />
-                  </div>
                 </div>
 
-                <div className="h-16" />
+                <div className="h-10" />
                 <div className="flex flex-wrap gap-2">
-                  {vulnerabilitiesCard.map((item, index) => {
+                  {getResponse.data?.vulnerabilities.map((item, index) => {
                     return (
                       <VulnerabilitiesCard
                         key={index}
                         id={index + 1}
                         title={item.title}
-                        text={item.text}
-                        severity={item.certainityScore}
-                        score={10} // TODO: Change this to actual score
+                        text={item.description}
+                        severity={
+                          item.severity.charAt(0).toUpperCase() +
+                          item.severity.slice(1)
+                        }
+                        score={item.certainityScore}
                         className={cn([
                           "mb-4 ",
                           index === vulnerabilitiesCard.length - 1
@@ -85,17 +102,23 @@ export default function TabsReview() {
                 </div>
                 <div className="h-6" />
                 <div className="flex w-full flex-col gap-4">
-                  {suggestedChanges.map((item, index) => {
+                  {getResponse.data?.vulnerabilities.map((item, index) => {
                     return (
                       <SuggestedCard
                         key={index}
                         title={item.title}
-                        text={item.text}
+                        text={item.recommendation}
                       />
                     );
                   })}
                 </div>
                 <div className="h-6" />
+                <div className="w-full">
+                  <h1 className="text-5xl font-bold text-textLight">
+                    Add a new vulnerability
+                  </h1>
+                  <AddVulnerability />
+                </div>
               </TabsContent>
             );
           })}
