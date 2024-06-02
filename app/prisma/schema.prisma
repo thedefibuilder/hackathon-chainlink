@@ -30,7 +30,6 @@ model AuditRequest {
 }
 
 model AuditResponse {
-  tokenId         Int?            @unique
   vulnerabilities Vulnerability[]
 
   createdAt DateTime @default(now())
@@ -38,6 +37,8 @@ model AuditResponse {
 
   auditRequest   AuditRequest @relation(fields: [auditRequestId], references: [id])
   auditRequestId Int          @unique
+
+  tokenId Int?
 }
 
 model Vulnerability {

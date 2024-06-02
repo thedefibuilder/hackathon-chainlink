@@ -38,92 +38,101 @@ export async function POST(
 ) {
   const requestId = parseInt(params.id);
 
-  const auditRequest = await db.auditRequest.findFirst({
-    where: { id: requestId },
-    include: { auditResponse: true, createdBy: true },
-  });
+  try {
+    const auditRequest = await db.auditRequest.findFirst({
+      where: { id: requestId },
+      include: { auditResponse: true, createdBy: true },
+    });
 
-  if (!auditRequest || auditRequest.auditResponse) {
-    return NextResponse.json(
-      {
-        error: auditRequest ? "Request already audited" : "Request not found",
-      },
-      { status: 400 },
+    if (!auditRequest || auditRequest.auditResponse) {
+      throw new Error("Request not found or already audited");
+    }
+
+    const { access_token: acccessToken } = await db.account.findFirstOrThrow({
+      where: { userId: auditRequest.createdBy.id },
+      select: { access_token: true },
+    });
+
+    const octokit = new Octokit({
+      auth: acccessToken,
+    });
+
+    // Parse each file in the request
+    const auditorResponses = await Promise.all(
+      auditRequest.filesInScope.map(async (file) => {
+        const fileContentBase64 = await octokit.rest.repos.getContent({
+          owner: auditRequest.repoOwner,
+          repo: auditRequest.repoName,
+          path: file,
+        });
+
+        const fileContentText = Buffer.from(
+          // @ts-expect-error-next-line
+          fileContentBase64.data.content,
+          "base64",
+        ).toString("utf-8");
+
+        const auditResponse = await fetch(
+          aiAuditorBackendURL + "/audit_function",
+          {
+            method: "POST",
+            body: JSON.stringify({
+              function_code: fileContentText,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+
+        if (!auditResponse.ok) {
+          throw new Error("Failed to audit file");
+        }
+
+        const auditResponseJson =
+          (await auditResponse.json()) as TAuditFindingResponse;
+
+        return {
+          file,
+          findings: auditResponseJson.vulnerabilities,
+        };
+      }),
     );
-  }
-  const { access_token: acccessToken } = await db.account.findFirstOrThrow({
-    where: { userId: auditRequest.createdBy.id },
-    select: { access_token: true },
-  });
 
-  const octokit = new Octokit({
-    auth: acccessToken,
-  });
-
-  // Parse each file in the request
-  const auditorResponses = await Promise.all(
-    auditRequest.filesInScope.map(async (file) => {
-      const fileContentBase64 = await octokit.rest.repos.getContent({
-        owner: auditRequest.repoOwner,
-        repo: auditRequest.repoName,
-        path: file,
-      });
-
-      const fileContentText = Buffer.from(
-        // @ts-ignore-next-line
-        fileContentBase64.data.content,
-        "base64",
-      ).toString("utf-8");
-
-      const auditResponse = await fetch(
-        aiAuditorBackendURL + "/audit_function",
-        {
-          method: "POST",
-          body: JSON.stringify({
-            function_code: fileContentText,
-          }),
-          headers: {
-            "Content-Type": "application/json",
+    await db.auditResponse.create({
+      data: {
+        auditRequestId: requestId,
+        vulnerabilities: {
+          createMany: {
+            data: auditorResponses.flatMap(({ findings, file }) => {
+              return findings.map((finding) => {
+                return {
+                  filePath: file,
+                  title: finding.title,
+                  description: finding.detail,
+                  severity: finding.severity,
+                  recommendation: finding.recommendation,
+                  certainityScore: finding.certainty_score,
+                };
+              });
+            }),
           },
         },
-      );
-
-      const auditResponseJson =
-        (await auditResponse.json()) as TAuditFindingResponse;
-
-      return {
-        file,
-        findings: auditResponseJson.vulnerabilities,
-      };
-    }),
-  );
-
-  await db.auditResponse.create({
-    data: {
-      auditRequestId: requestId,
-      vulnerabilities: {
-        createMany: {
-          data: auditorResponses.flatMap(({ findings, file }) => {
-            return findings.map((finding) => {
-              return {
-                filePath: file,
-                title: finding.title,
-                description: finding.detail,
-                severity: finding.severity,
-                recommendation: finding.recommendation,
-                certainityScore: finding.certainty_score,
-              };
-            });
-          }),
-        },
       },
-    },
-  });
+    });
 
-  return NextResponse.json(
-    {
-      data: "ok",
-    },
-    { status: 200 },
-  );
+    return NextResponse.json(
+      {
+        data: "ok",
+      },
+      { status: 200 },
+    );
+  } catch (e) {
+    return NextResponse.json(
+      {
+        error: "Failed to audit request",
+      },
+      { status: 500 },
+    );
+  }
 }
