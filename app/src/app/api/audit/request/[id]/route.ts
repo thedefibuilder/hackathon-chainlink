@@ -4,6 +4,8 @@ import { api } from "@/trpc/server";
 import { Octokit } from "octokit";
 import { NextRequest, NextResponse } from "next/server";
 
+export const maxDuration = 300;
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: { id: string } },
@@ -31,7 +33,7 @@ export async function GET(
 
 // Callable by chainlink function
 export async function POST(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { id: string } },
 ) {
   const requestId = parseInt(params.id);
@@ -41,11 +43,10 @@ export async function POST(
     include: { auditResponse: true, createdBy: true },
   });
 
-  if (!auditRequest || auditRequest.auditResponse !== null) {
+  if (!auditRequest || auditRequest.auditResponse) {
     return NextResponse.json(
       {
-        error:
-          "Bad Request: Either request not found or response already exists",
+        error: auditRequest ? "Request already audited" : "Request not found",
       },
       { status: 400 },
     );
@@ -121,7 +122,7 @@ export async function POST(
 
   return NextResponse.json(
     {
-      findings: auditorResponses,
+      data: "ok",
     },
     { status: 200 },
   );
