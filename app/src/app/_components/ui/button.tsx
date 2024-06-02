@@ -1,20 +1,27 @@
 import { type MouseEventHandler, type ReactNode } from "react";
 
-interface ButtonProps {
+export interface ButtonProps {
   onClick?: MouseEventHandler<HTMLButtonElement>;
   children: ReactNode;
   className?: string;
   type?: "button" | "submit" | "reset";
+  disabled?: boolean;
 }
 
 export default function Button({
   onClick,
   children,
   className,
-  type = "button",
+  disabled,
+  type = "submit",
 }: ButtonProps) {
   return (
-    <button onClick={onClick} className={className} type={type}>
+    <button
+      onClick={onClick}
+      className={className}
+      type={type}
+      disabled={disabled}
+    >
       {children}
     </button>
   );

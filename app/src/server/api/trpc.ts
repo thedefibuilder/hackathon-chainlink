@@ -13,6 +13,7 @@ import { ZodError } from "zod";
 
 import { getServerAuthSession } from "@/server/auth";
 import { db } from "@/server/db";
+import { Octokit } from "octokit";
 
 /**
  * 1. CONTEXT
@@ -28,10 +29,20 @@ import { db } from "@/server/db";
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const session = await getServerAuthSession();
+  let octokit: Octokit | undefined;
+
+  if (session?.user.id) {
+    const { access_token: accessToken } = await db.account.findFirstOrThrow({
+      where: { userId: session.user.id },
+      select: { access_token: true },
+    });
+    octokit = new Octokit({ auth: accessToken });
+  }
 
   return {
     db,
     session,
+    githubApi: octokit?.rest,
     ...opts,
   };
 };
