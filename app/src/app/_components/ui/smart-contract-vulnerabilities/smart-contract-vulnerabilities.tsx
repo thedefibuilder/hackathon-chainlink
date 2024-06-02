@@ -35,7 +35,6 @@ export default function SmartContractVulnerabilities() {
           </div>
         </div>
         <div className="flex w-1/2 justify-end gap-2">
-          <AddVulnerability />
           <div className="flex rounded-lg bg-white px-4">
             <div className="flex flex-col ">
               <h3 className="mb-0 text-[32px] font-bold text-dark-darkMain">

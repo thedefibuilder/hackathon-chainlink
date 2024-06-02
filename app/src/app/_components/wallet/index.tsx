@@ -26,7 +26,7 @@ export default function Wallet({ className }: TWallet) {
 
   return (
     <Button className={cn(className)} onClick={openConnectModal}>
-      Connect Wallet
+      t
     </Button>
   );
 }

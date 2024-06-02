@@ -1,5 +1,7 @@
 import { reviewContent, suggestedChanges, vulnerabilitiesCard } from "content";
 import { cn } from "lib/utils";
+import AddVulnerability from "../smart-contract-vulnerabilities/add-vulnerability";
+import AddVulnerabilityForm from "../smart-contract-vulnerabilities/add-vulnerability-from";
 import SuggestedCard from "../suggested-changes/suggested-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../tabs";
 import VulnerabilitiesCard from "../vulnerabilities-card";
@@ -51,9 +53,15 @@ export default function TabsReview() {
                 />
 
                 <div className="h-10" />
-                <h2 className="text-5xl font-bold text-textLight">
-                  5 Vulnerabilites found
-                </h2>
+                <div className="flex items-end gap-4">
+                  <h2 className="w- text-5xl font-bold text-textLight">
+                    5 Vulnerabilites found
+                  </h2>
+                  <div className="w-1/2">
+                    <AddVulnerability />
+                  </div>
+                </div>
+
                 <div className="h-16" />
                 <div className="flex flex-wrap gap-2">
                   {vulnerabilitiesCard.map((item, index) => {
