@@ -12,7 +12,7 @@ contract Deploy is BaseScript {
     function run() public broadcast {
         // Deployed WrappedNative at address 0x3e770515D6Ed2197817dF6eeB26853df4E739080
         // Deployed AuditorsVault at address 0xbFcfaad9a78C0a05cf2ad7D43273DEDd35C4eB75
-        // Deployed AuditRegistry at address 0xE7D58f6139465cF4183e4A4C510085C1036CA584
+        // Deployed AuditRegistry at address 0x326031eFb581279489f0747f106A5e2f9d76dc9d
 
         WrappedNative wNative = WrappedNative(payable(0x3e770515D6Ed2197817dF6eeB26853df4E739080));
         AuditorsVault vault = AuditorsVault(0xbFcfaad9a78C0a05cf2ad7D43273DEDd35C4eB75);
