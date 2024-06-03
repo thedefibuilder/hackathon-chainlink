@@ -36,13 +36,10 @@ contract AuditRegistry is Ownable, ERC721URIStorage, ERC721Enumerable, Functions
 
     address public immutable auditorsVault;
     WrappedNative public immutable wrappedNative;
-<<<<<<< HEAD
 
     uint256 public auditFeeInUSD;
     string public functionsCode;
 
-=======
->>>>>>> 850c486 (gtihub file add add review componente add)
     mapping(bytes32 functionsRequest => RequestData data) public requests;
     mapping(uint256 tokenId => uint256 auditRequest) public auditRequests;
 
